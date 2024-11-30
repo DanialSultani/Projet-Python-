@@ -3,7 +3,7 @@ from random import *
 from unit import *
 from case import *
 from interface import *
-from deplacement import *
+
 
 def main():
 
@@ -12,12 +12,12 @@ def main():
 
     # Instanciation de la fenêtre
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Mon jeu de stratégie")
+    pygame.display.set_caption("Flags of Glory")
     
     # Charger les fresque
     try:
-        fresque = pygame.image.load("images/fresque_1.png")
-        fresque = pygame.transform.scale(fresque, (WIDTH,HEIGHT))  
+        fresque = pygame.image.load("Projet-Python-/images/fresque_1.png")
+        fresque = pygame.transform.scale(fresque, (0.95*WIDTH,HEIGHT))  
     except pygame.error as e:
         print(f"Erreur lors du chargement de l'image : {e}")
         return
@@ -42,15 +42,15 @@ def main():
 
    # Boucle principale
     clock = pygame.time.Clock()
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
 
-        # Simulation des tours de jeu (simplifié ici)
-        game.flip_display()
-        clock.tick(FPS)
+        game.handle_player_turn()
+        game.handle_enemy_turn()
 
 
 if __name__ == "__main__":

@@ -74,6 +74,8 @@ puissance d'attaque et une équipe.
         self.team = team
         self.deplacement = deplacement
         self.is_selected = False
+        self.max_health=health
+        
 
         # Définit le déplacement maximal par type d'unité
         if self.deplacement == 'helico':
@@ -117,6 +119,22 @@ sa distance restante.
         else:
             print("Déplacement hors des limites de la grille.")
 
+
+    def damage(self,degat):
+        self.health-= degat
+
+        # Verifier si il a toujours de la vie 
+        if self.health<=0:
+            x=0
+
+
+    #def update_health_bar(self,surface):
+        # Dessiner la barre de vie 
+        #pygame.draw.rect(surface,BLACK,[self.x,self.y, self.max_health,5])
+        #pygame.draw.rect(surface,RED,[self.x,self.y, self.health,5])
+
+
+
     def attack(self, target):
         """Attaque une unité cible."""
         if abs(self.x - target.x) <= 1 and abs(self.y - target.y) <= 1:
@@ -125,29 +143,62 @@ sa distance restante.
     def draw(self, screen):
         """Affiche l'unité sur l'écran."""
 
-        # Afficher les soldats
+        # Charger et redimensionner les sprites
         if self.deplacement == 'soldat':
-            soldat = pygame.image.load("Projet-Python-/images/soldat.png")
-            soldat = pygame.transform.scale(soldat, ( 2*(CELL_SIZE-1), 2*(CELL_SIZE-1)))
-            screen.blit(soldat, (self.x * CELL_SIZE, self.y * CELL_SIZE))
-
-        # Afficher les medecin
-        if self.deplacement == 'medecin':
-            medecin = pygame.image.load("images/medecin.png")
-            medecin  = pygame.transform.scale(medecin ,  (4*CELL_SIZE, 2*CELL_SIZE))  
-            screen.blit(medecin , (self.x * CELL_SIZE,
-                             self.y * CELL_SIZE))
-            pygame.display.flip()
-
-        # Afficher les helico
+            sprite = pygame.image.load("Projet-Python-/images/soldat.png")
+            sprite = pygame.transform.scale(sprite, (2 * (CELL_SIZE - 1), 2 * (CELL_SIZE - 1)))
+        elif self.deplacement == 'medecin':
+            sprite = pygame.image.load("Projet-Python-/images/medecin.png")
+            sprite = pygame.transform.scale(sprite, (4 * CELL_SIZE, 2 * CELL_SIZE))
         elif self.deplacement == 'helico':
-            helico = pygame.image.load("Projet-Python-/images/helico.png")
-            helico = pygame.transform.scale(helico, (3*(CELL_SIZE-2),3* (CELL_SIZE-2)))
-            screen.blit(helico, (self.x * CELL_SIZE, self.y * CELL_SIZE))
-
-        # Afficher les chars
+            sprite = pygame.image.load("Projet-Python-/images/helico.png")
+            sprite = pygame.transform.scale(sprite, (3 * (CELL_SIZE - 2), 3 * (CELL_SIZE - 2)))
         elif self.deplacement == 'char':
-            char = pygame.image.load("Projet-Python-/images/char.png")
-            char = pygame.transform.scale(char, (3 * CELL_SIZE, 3 * CELL_SIZE))
-            screen.blit(char, (self.x * CELL_SIZE, self.y * CELL_SIZE))
+            sprite = pygame.image.load("Projet-Python-/images/char.png")
+            sprite = pygame.transform.scale(sprite, (3 * CELL_SIZE, 3 * CELL_SIZE))
+        else:
+            return  # Si aucun type ne correspond
 
+        # Dessiner le sprite
+        screen.blit(sprite, (self.x * CELL_SIZE, self.y * CELL_SIZE))
+
+        # Calcul de la barre de santé
+        health_p = max(0, min(1, self.health / self.max_health))  # Proportion de santé restante
+        health_bar = int(CELL_SIZE * 0.9)  # Largeur totale de la barre de santé
+        health_width = int(health_bar * health_p)  # Largeur basée sur la santé restante
+        health_height = 6  # Hauteur de la barre de santé
+
+        # Position horizontale centrée
+        if self.deplacement == 'soldat':
+            health_x = self.x * CELL_SIZE + (2 * (CELL_SIZE - 1)) // 2 - health_bar // 2
+        elif self.deplacement == 'medecin':
+            health_x = self.x * CELL_SIZE + (4 * CELL_SIZE) // 2 - health_bar // 2
+        elif self.deplacement == 'helico':
+            health_x = self.x * CELL_SIZE + (3 * (CELL_SIZE - 2)) // 2 - health_bar // 2
+        elif self.deplacement == 'char':
+            health_x = self.x * CELL_SIZE + (3 * CELL_SIZE) // 2 - health_bar // 2
+        else:
+            health_x = self.x * CELL_SIZE + CELL_SIZE // 2 - health_bar // 2
+
+        # Position verticale ajustée
+        if self.deplacement == 'soldat':
+            health_y = self.y * CELL_SIZE - 10
+        elif self.deplacement == 'medecin':
+            health_y = self.y * CELL_SIZE - 5
+        elif self.deplacement == 'helico':
+            health_y = self.y * CELL_SIZE + 30
+        elif self.deplacement == 'char':
+            health_y = self.y * CELL_SIZE + 30
+        else:
+            health_y = self.y * CELL_SIZE - 15
+
+        # Dessiner la bordure de la barre de santé
+        border_largeur = 2
+        borders = 3
+        pygame.draw.rect(screen, (0, 0, 0), (health_x - border_largeur, health_y - border_largeur,
+                                            health_bar + 2 * border_largeur, health_height + 2 * border_largeur),
+                        border_radius=borders)
+
+        # Dessiner la barre de santé
+        color = (0, 255, 0) if self.team == "player" else (255, 0, 0)
+        pygame.draw.rect(screen, color, (health_x, health_y, health_width, health_height), border_radius=borders)
