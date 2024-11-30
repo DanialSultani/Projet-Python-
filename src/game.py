@@ -3,6 +3,7 @@ from random import *
 from unit import *
 from case import *
 from interface import *
+FPS = 60
 
 
 def main():
@@ -48,9 +49,10 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-
+        
         game.handle_player_turn()
         game.handle_enemy_turn()
+        clock.tick(FPS)
 
 
 if __name__ == "__main__":

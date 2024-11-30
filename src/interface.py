@@ -99,7 +99,18 @@ class Game :
         for case in self.current_map["cases"]:
             case.draw(self.screen )
             
-            
+    def all_units_done(self, current_turn):
+        """
+        Vérifie si toutes les unités du joueur ou de l'ennemi ont terminé leurs actions.
+
+        current_turn : str
+            Le tour actuel, soit 'player' soit 'enemy'.
+
+        Retourne :
+            bool : True si toutes les unités ont terminé leurs actions, False sinon.
+        """
+        units = self.player_units if current_turn == 'player' else self.enemy_units
+        return all(unit.distance_remaining == 0 for unit in units)        
 
     def flip_display(self):
         """Affiche le jeu uniquement sur la surface dédiée (game_surface)."""
@@ -209,16 +220,33 @@ class Game :
 
     def handle_enemy_turn(self):
         """IA très simple pour les ennemis."""
+        if self.player_units:  # Vérifie si la liste n'est pas vide
+            target = random.choice(self.player_units)  # Choix aléatoire parmi les unités du joueur
+            print(f"Une unité ennemie attaque l'unité {target} !")
+            # Ajoute ta logique d'attaque ici (par exemple, réduire la santé de `target`)
+        else:
+            print("Aucune unité du joueur disponible pour être attaquée.")
         for enemy in self.enemy_units:
-
-            # Déplacement aléatoire
+            # Choix aléatoire d'une cible parmi les unités du joueur
             target = random.choice(self.player_units)
+
+            # Calcul du déplacement
             dx = 1 if enemy.x < target.x else -1 if enemy.x > target.x else 0
             dy = 1 if enemy.y < target.y else -1 if enemy.y > target.y else 0
-            enemy.move(dx, dy)
 
-            # Attaque si possible
+            # Application du déplacement
+            enemy.x += dx
+            enemy.y += dy
+
+            # Vérification pour attaquer si à portée
             if abs(enemy.x - target.x) <= 1 and abs(enemy.y - target.y) <= 1:
-                enemy.attack(target)
+                print(f"Enemy at ({enemy.x}, {enemy.y}) attaque Player at ({target.x}, {target.y})")
+                target.health -= enemy.attack_power
+
+                # Supprime l'unité du joueur si elle est morte
                 if target.health <= 0:
                     self.player_units.remove(target)
+
+        # Tour des ennemis terminé, le jeu continue normalement
+        print("Fin du tour des ennemis.")
+
