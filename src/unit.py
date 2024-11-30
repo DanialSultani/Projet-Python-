@@ -48,25 +48,6 @@ class Unit:
     """
 
     def __init__(self, x, y, health, attack_power, team, deplacement):
-        """
-        Construit une unité avec une position, une santé, une
-puissance d'attaque et une équipe.
-
-        Paramètres
-        ----------
-        x : int
-            La position x de l'unité sur la grille.
-        y : int
-            La position y de l'unité sur la grille.
-        health : int
-            La santé de l'unité.
-        attack_power : int
-            La puissance d'attaque de l'unité.
-        team : str
-            L'équipe de l'unité ('player' ou 'enemy').
-        deplacement : str
-            Moyen de déplacement de l'unité ('soldat' ou 'helico' ou 'char').
-        """
         self.x = x
         self.y = y
         self.health = health
@@ -74,71 +55,64 @@ puissance d'attaque et une équipe.
         self.team = team
         self.deplacement = deplacement
         self.is_selected = False
-        self.max_health=health
-        
+        self.max_health = health
 
-        # Définit le déplacement maximal par type d'unité
-        if self.deplacement == 'helico':
-            self.max_distance = 3
-        elif self.deplacement == 'soldat':
+        # Définit la vitesse (distance maximale) et les pouvoirs par type d'unité
+        if self.deplacement == 'soldat':
             self.max_distance = 2
+            self.attack_power = 1  # Pouvoir d'attaque
+            self.attack_range = 1  # Rayon d'attaque (8 cases autour)
+        elif self.deplacement == 'medecin':  # Correction ici pour le médecin
+            self.max_distance = 3  # Distance de déplacement correcte pour le médecin
+            self.heal_power = 2  # Pouvoir de guérison
+            self.attack_range = 1  # Rayon d'action (8 cases autour)
+        elif self.deplacement == 'helico':
+            self.max_distance = 4
+            self.attack_power = 3  # Pouvoir d'attaque
+            self.attack_range = 3  # Rayon d'attaque (3 cases en dessous)
         elif self.deplacement == 'char':
-            self.max_distance = 1
+            self.max_distance = 6
+            self.attack_power = 3  # Pouvoir d'attaque
+            self.attack_range = 2  # Rayon d'attaque (2 cases)
         else:
             self.max_distance = 1  # Par défaut
+            self.attack_power = 0
+            self.attack_range = 0
 
-        self.distance_remaining = self.max_distance  # Cases restantes pour le tour
+        self.distance_remaining = self.max_distance  # Initialisation correcte
 
     def reset_distance(self):
-        """Réinitialise la distance restante au début d'un nouveau tour."""
+        """Réinitialise la distance restante au maximum pour ce tour."""
         self.distance_remaining = self.max_distance
 
-    def move(self, dx, dy ):
-        """
-        Déplace l'unité dans une direction donnée, dans la limite de
-sa distance restante.
-
-        direction : tuple (dx, dy)
-            La direction dans laquelle l'unité doit se déplacer.
-        """
-        
+    def move(self, dx, dy):
+        """Déplace l'unité dans une direction donnée, dans la limite de sa distance restante."""
         distance = abs(dx) + abs(dy)
-
-        # Vérifie si le déplacement demandé dépasse la distance restante
         if distance > self.distance_remaining:
             print(f"Déplacement non autorisé : il reste {self.distance_remaining} cases.")
             return
 
-        # Vérifie les limites de la grille
         new_x = self.x + dx
         new_y = self.y + dy
         if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
             self.x = new_x
             self.y = new_y
-            self.distance_remaining -= distance  # Réduit la distance restante
+            self.distance_remaining -= distance
         else:
             print("Déplacement hors des limites de la grille.")
 
-
-    def damage(self,degat):
-        self.health-= degat
-
-        # Verifier si il a toujours de la vie 
-        if self.health<=0:
-            x=0
-
-
-    #def update_health_bar(self,surface):
-        # Dessiner la barre de vie 
-        #pygame.draw.rect(surface,BLACK,[self.x,self.y, self.max_health,5])
-        #pygame.draw.rect(surface,RED,[self.x,self.y, self.health,5])
-
-
-
     def attack(self, target):
-        """Attaque une unité cible."""
-        if abs(self.x - target.x) <= 1 and abs(self.y - target.y) <= 1:
-            target.health -= self.attack_power
+        """Attaque une unité cible si elle est dans le rayon d'attaque."""
+        distance = abs(self.x - target.x) + abs(self.y - target.y)
+        if distance <= self.attack_range:
+            if hasattr(self, 'heal_power'):  # Si c'est un docteur, il soigne
+                target.health = min(target.max_health, target.health + self.heal_power)
+                print(f"{self.deplacement} soigne {target.deplacement} pour {self.heal_power} points de vie.")
+            else:  # Sinon, il attaque
+                target.health -= self.attack_power
+                print(f"{self.deplacement} attaque {target.deplacement} pour {self.attack_power} dégâts.")
+        else:
+            print("Cible hors de portée.")
 
     def draw(self, screen):
         """Affiche l'unité sur l'écran."""
