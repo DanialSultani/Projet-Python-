@@ -61,11 +61,11 @@ class Unit:
         if self.deplacement == 'soldat':
             self.max_distance = 2
             self.attack_power = 1  # Pouvoir d'attaque
-            self.attack_range = 1  # Rayon d'attaque (8 cases autour)
+            self.attack_range = 8  # Rayon d'attaque (8 cases autour)
         elif self.deplacement == 'medecin':  # Correction ici pour le médecin
             self.max_distance = 3  # Distance de déplacement correcte pour le médecin
             self.heal_power = 2  # Pouvoir de guérison
-            self.attack_range = 1  # Rayon d'action (8 cases autour)
+            self.attack_range = 8  # Rayon d'action (8 cases autour)
         elif self.deplacement == 'helico':
             self.max_distance = 4
             self.attack_power = 3  # Pouvoir d'attaque

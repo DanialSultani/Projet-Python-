@@ -43,6 +43,8 @@ class Game :
         screen : pygame.Surface
             La surface de la fenêtre du jeu.
         """
+        self.current_turn = 'player'  # Débute avec le tour du joueur
+        self.selected_unit = None  # Unité sélectionnée
         self.screen = screen
         self.player_units = [Unit(1, 3, 10, 2, 'player','soldat'),
                              Unit(1, 4, 10, 2, 'player','medecin'),
@@ -188,7 +190,7 @@ class Game :
                     if event.type == pygame.QUIT:
                         pygame.quit()
                         exit()
-
+                
                     if event.type == pygame.KEYDOWN:
                         dx, dy = 0, 0
 
@@ -201,6 +203,7 @@ class Game :
                             dy = -1
                         elif event.key == pygame.K_DOWN:
                             dy = 1
+                         
                         
                         selected_unit.move(dx, dy)
                         self.flip_display()
@@ -227,43 +230,23 @@ class Game :
 
 
     def handle_enemy_turn(self):
-        """IA améliorée pour les ennemis."""
+        """IA très simple pour les ennemis."""
         for unit in self.enemy_units:
             unit.reset_distance()
 
         for enemy in self.enemy_units:
-            if not self.player_units:
-                break  # Plus d'unités à attaquer
+            # Choix aléatoire d'une cible parmi les unités du joueur
+            target = random.choice(self.player_units)
 
-            # Trouver la cible la plus proche
-            target = min(
-                self.player_units,
-                key=lambda player: abs(player.x - enemy.x) + abs(player.y - enemy.y),
-            )
+            # Calcul du déplacement
+            dx = 1 if enemy.x < target.x else -1 if enemy.x > target.x else 0
+            dy = 1 if enemy.y < target.y else -1 if enemy.y > target.y else 0
 
-            # Calcul des déplacements disponibles
-            dx = target.x - enemy.x
-            dy = target.y - enemy.y
+            # Application du déplacement
+            enemy.x += dx
+            enemy.y += dy
 
-            # Déplacement basé sur le type d'unité
-            move_x, move_y = 0, 0
-            if enemy.deplacement == 'soldat':
-                # Soldat : se rapproche directement
-                move_x, move_y = self.calculate_move_simple(enemy, dx, dy)
-            elif enemy.deplacement == 'helico':
-                # Hélico : se positionne dans un rayon spécifique
-                move_x, move_y = self.calculate_move_simple(enemy, dx, dy, max_distance=enemy.max_distance)
-            elif enemy.deplacement == 'char':
-                # Char : avance lentement vers l'ennemi
-                move_x, move_y = self.calculate_move_simple(enemy, dx, dy, prioritize_horizontal=True)
-            else:
-                # Par défaut : comportement de rapprochement
-                move_x, move_y = self.calculate_move_simple(enemy, dx, dy)
-
-            # Appliquer le déplacement
-            enemy.move(move_x, move_y)
-
-            # Vérifier si l'ennemi peut attaquer la cible
+            # Vérification pour attaquer si à portée
             if abs(enemy.x - target.x) <= 1 and abs(enemy.y - target.y) <= 1:
                 print(f"Enemy at ({enemy.x}, {enemy.y}) attaque Player at ({target.x}, {target.y})")
                 target.health -= enemy.attack_power
@@ -272,43 +255,6 @@ class Game :
                 if target.health <= 0:
                     self.player_units.remove(target)
 
+        # Tour des ennemis terminé, le jeu continue normalement
         print("Fin du tour des ennemis.")
-
-    def calculate_move_simple(self, enemy, dx, dy, max_distance=None, prioritize_horizontal=False):
-        """
-        Calcul simplifié des déplacements pour une unité ennemie.
-
-        Parameters:
-            enemy (Unit): L'unité ennemie qui se déplace.
-            dx (int): Distance horizontale vers la cible.
-            dy (int): Distance verticale vers la cible.
-            max_distance (int): Distance maximale autorisée (facultatif).
-            prioritize_horizontal (bool): Prioriser les mouvements horizontaux (facultatif).
-
-        Returns:
-            (int, int): Déplacement optimal en x et y.
-        """
-        max_distance = max_distance if max_distance is not None else enemy.distance_remaining
-        move_x, move_y = 0, 0
-
-        if prioritize_horizontal:
-            # Bouge d'abord horizontalement, puis verticalement
-            if abs(dx) > 0:
-                move_x = 1 if dx > 0 else -1
-            elif abs(dy) > 0:
-                move_y = 1 if dy > 0 else -1
-        else:
-            # Bouge dans la direction la plus éloignée
-            if abs(dx) >= abs(dy):
-                move_x = 1 if dx > 0 else -1
-            elif abs(dy) > 0:
-                move_y = 1 if dy > 0 else -1
-
-        # Ajuster pour ne pas dépasser la distance maximale
-        move_x = max(-max_distance, min(max_distance, move_x))
-        move_y = max(-max_distance, min(max_distance - abs(move_x), move_y))
-
-        return move_x, move_y
-
-
 
