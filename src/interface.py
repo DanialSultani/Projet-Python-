@@ -6,8 +6,7 @@ from case import *
 # Constantes pour l'adaptation dynamique
 CELL_SIZE = 50
 GRID_SIZE = 16  # Nombre de cellules par dimension
-WIDTH = (GRID_SIZE * CELL_SIZE)+600
-HEIGHT = GRID_SIZE * CELL_SIZE
+
 
 
 # Couleur 
@@ -15,7 +14,7 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GRAY = (50, 50, 50)
 BLUE= (0, 0, 255, 255)
-FPS = 30
+FPS = 60
 
 
 
@@ -62,7 +61,7 @@ class Game :
                     Case(10, 10, 'buisson'), Case(17, 10, 'buisson'),
                     Case(3, 3, 'puit'), Case(17, 13, 'puit'),
                     Case(0, 3, 'flag1'), Case(21, 13, 'flag2'), # Drapeau 
-                    Case(22, 1, 'arbre'), Case(21, 1, 'arbre'),Case(20, 1, 'arbre'), Case(19, 2, 'arbre'),Case(18, 1, 'arbre'),Case(22, 3, 'arbre'),Case(21, 2, 'arbre'),Case(20, 3, 'arbre'),Case(15, 5, 'arbre'),Case(10, 8, 'arbre'),Case(2, 12, 'arbre'),
+                    Case(22, 1, 'arbre'), Case(20, 1, 'arbre'), Case(19, 2, 'arbre'),Case(18, 1, 'arbre'),Case(22, 3, 'arbre'),Case(21, 2, 'arbre'),Case(20, 3, 'arbre'),Case(22, 4, 'arbre'),Case(15, 5, 'arbre'),Case(10, 8, 'arbre'),Case(2, 12, 'arbre'),
                     Case(0, 12, 'arbre'), Case(-1, 12, 'arbre'), Case(2, 13, 'arbre'),Case(2, 13, 'arbre'),Case(0, 13, 'arbre'),Case(1, 14, 'arbre'),Case(-1, 14, 'arbre'),Case(3, 14, 'arbre') # Arbre 
  # Arbre 
                 ]
@@ -92,14 +91,25 @@ class Game :
         ]
 
         # Sélection d'une map aléatoire
-        self.current_map = self.maps[2]
+        self.current_map = self.maps[0]
 
     def draw_map(self):
         """Affiche les cases spécifiques de la map actuelle."""
         for case in self.current_map["cases"]:
             case.draw(self.screen )
             
-            
+    
+    def all_units_done(self, current_turn):
+        """
+        Vérifie si toutes les unités du joueur ou de l'ennemi ont terminé leurs actions.
+        current_turn : str
+            Le tour actuel, soit 'player' soit 'enemy'.
+        Retourne :
+            bool : True si toutes les unités ont terminé leurs actions, False sinon.
+        """
+        units = self.player_units if current_turn == 'player' else self.enemy_units
+        return all(unit.distance_remaining == 0 for unit in units)   
+    
 
     def flip_display(self):
         """Affiche le jeu uniquement sur la surface dédiée (game_surface)."""
@@ -161,64 +171,102 @@ class Game :
         # Rafraîchir l'affichage complet
         pygame.display.flip()
 
-    def handle_player_turn(self):
-        """Tour du joueur"""
-        for selected_unit in self.player_units:
 
-            # Tant que l'unité n'a pas terminé son tour
-            has_acted = False
-            selected_unit.is_selected = True
-            self.flip_display()
-            while not has_acted:
+    def handle_player_turn(self, player_units):
+        """
+        Gère le tour d'un joueur. Chaque joueur peut déplacer une unité.
+        """
+        for unit in player_units:
+            unit.reset_distance()  # Réinitialise la distance restante au début du tour
 
-            # Important: cette boucle permet de gérer les événements Pygame
-                for event in pygame.event.get():
+        selected_unit = player_units[0]  # Exemple : on sélectionne toujours la première unité (améliorable)
+        has_acted = False
+        selected_unit.is_selected = True
+        self.flip_display()
 
-                    # Gestion de la fermeture de la fenêtre
-                    if event.type == pygame.QUIT:
-                        pygame.quit()
-                        exit()
+        while not has_acted:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
 
-                    # Gestion des touches du clavier
-                    if event.type == pygame.KEYDOWN:
+                if event.type == pygame.KEYDOWN:
+                    dx, dy = 0, 0
 
-                        # Déplacement (touches fléchées)
-                        dx, dy = 0, 0
-                        if event.key == pygame.K_LEFT:
-                            dx = -1
-                        elif event.key == pygame.K_RIGHT:
-                            dx = 1
-                        elif event.key == pygame.K_UP:
-                                dy = -1
-                        elif event.key == pygame.K_DOWN:
-                                dy = 1
+                    # Déplacement pour les flèches (joueur 1)
+                    if event.key == pygame.K_LEFT:
+                        dx = -1
+                    elif event.key == pygame.K_RIGHT:
+                        dx = 1
+                    elif event.key == pygame.K_UP:
+                        dy = -1
+                    elif event.key == pygame.K_DOWN:
+                        dy = 1
 
-                        selected_unit.move(dx, dy)
-                        self.flip_display()
+                    # Déplacement pour les touches ZQSD (joueur 2)
+                    elif event.key == pygame.K_a:  # Gauche
+                        dx = -1
+                    elif event.key == pygame.K_d:  # Droite
+                        dx = 1
+                    elif event.key == pygame.K_w:  # Haut
+                        dy = -1
+                    elif event.key == pygame.K_s:  # Bas
+                        dy = 1
 
-                        # Attaque (touche espace) met fin au tour
-                        if event.key == pygame.K_SPACE:
-                            for enemy in self.enemy_units:
-                                if abs(selected_unit.x - enemy.x) <= 1 and abs(selected_unit.y - enemy.y) <= 1:
-                                    selected_unit.attack(enemy)
-                                    if enemy.health <= 0:
-                                        self.enemy_units.remove(enemy)
+                    # Effectuer le déplacement
+                    selected_unit.move(dx, dy)
+                    self.flip_display()
 
-                            has_acted = True
-                            selected_unit.is_selected = False
+                    # Fin du tour avec espace
+                    if event.key == pygame.K_SPACE:
+                        has_acted = True
+                        selected_unit.is_selected = False
 
-    def handle_enemy_turn(self):
-        """IA très simple pour les ennemis."""
-        for enemy in self.enemy_units:
+    def play_game(self):
+        """
+        Gère la boucle principale du jeu à deux joueurs.
+        """
+        current_player = 1  # 1 pour le joueur 1, 2 pour le joueur 2
 
-            # Déplacement aléatoire
-            target = random.choice(self.player_units)
-            dx = 1 if enemy.x < target.x else -1 if enemy.x > target.x else 0
-            dy = 1 if enemy.y < target.y else -1 if enemy.y > target.y else 0
-            enemy.move(dx, dy)
+        while self.player_units and self.enemy_units:
+            if current_player == 1:
+                print("Tour du Joueur 1")
+                self.handle_player_turn(self.player_units)
+            else:
+                print("Tour du Joueur 2")
+                self.handle_player_turn(self.enemy_units)
+            
+            # Alterne entre les joueurs
+            current_player = 2 if current_player == 1 else 1
+        
 
-            # Attaque si possible
-            if abs(enemy.x - target.x) <= 1 and abs(enemy.y - target.y) <= 1:
-                enemy.attack(target)
-                if target.health <= 0:
-                    self.player_units.remove(target)
+    def calculate_move_simple(self, enemy, dx, dy, max_distance=None, prioritize_horizontal=False):
+        """
+        Calcul simplifié des déplacements pour une unité ennemie.
+        Parameters:
+            enemy (Unit): L'unité ennemie qui se déplace.
+            dx (int): Distance horizontale vers la cible.
+            dy (int): Distance verticale vers la cible.
+            max_distance (int): Distance maximale autorisée (facultatif).
+            prioritize_horizontal (bool): Prioriser les mouvements horizontaux (facultatif).
+        Returns:
+            (int, int): Déplacement optimal en x et y.
+        """
+        max_distance = max_distance if max_distance is not None else enemy.distance_remaining
+        move_x, move_y = 0, 0
+        if prioritize_horizontal:
+            # Bouge d'abord horizontalement, puis verticalement
+            if abs(dx) > 0:
+                move_x = 1 if dx > 0 else -1
+            elif abs(dy) > 0:
+                move_y = 1 if dy > 0 else -1
+        else:
+            # Bouge dans la direction la plus éloignée
+            if abs(dx) >= abs(dy):
+                move_x = 1 if dx > 0 else -1
+            elif abs(dy) > 0:
+                move_y = 1 if dy > 0 else -1
+        # Ajuster pour ne pas dépasser la distance maximale
+        move_x = max(-max_distance, min(max_distance, move_x))
+        move_y = max(-max_distance, min(max_distance - abs(move_x), move_y))
+        return move_x, move_y
