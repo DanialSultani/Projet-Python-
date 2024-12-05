@@ -14,27 +14,30 @@ FPS = 30
 class Case :
     """
     Classe pour représenter une case.
-
     ...
     Attributs
     ---------
     x : int
         La position x de la case sur la grille.
     y : int
-        La position y de la case  sur la grille.
-    proprite : str
-        Propriete de la case('mur' ou 'herbe' ou 'flag1' ou 'flag2').
-    
-
+        La position y de la case sur la grille.
+    propriete : str
+        Propriété de la case ('mur', 'herbe', 'flag1', 'flag2', etc.).
+    effet : dict
+        Les effets spécifiques associés à la case.
     Méthodes
     --------
     draw(screen)
-        Dessine l'unité sur la grille.
+        Dessine la case sur la grille.
+    appliquer_effet(unite)
+        Applique l'effet de la case à une unité (à définir dans une autre classe).
+    bloque_balle()
+        Retourne True si la case bloque les balles, False sinon.
     """
 
     def __init__(self, x, y, propriete):
         """
-        Construit une case avec une position,
+        Construit une case avec une position et une propriété.
 
         Paramètres
         ----------
@@ -42,12 +45,68 @@ class Case :
             La position x de la case sur la grille.
         y : int
             La position y de la case sur la grille.
-        
+        propriete : str
+            Type de la case ('mur', 'buisson', 'oasis', etc.).
         """
         self.x = x
         self.y = y
-        self.propriete = propriete 
-        
+        self.propriete = propriete
+        self.effet = self.definir_effet(propriete)
+
+    def definir_effet(self, propriete):
+        """
+        Définit les effets associés au type de la case.
+
+        Paramètres
+        ----------
+        propriete : str
+            Type de la case ('mur', 'buisson', 'oasis', etc.).
+
+        Retourne
+        --------
+        dict : Effets définis pour la case.
+        """
+        effets = {
+            "mur": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "herbe": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "buisson": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": True, "invincible": True, "boost_vitesse": 0},
+            "oasis": {"traversable": True, "bloque_balle": False, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "chameau": {"traversable": True, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 1},
+            "bonhomme_neige": {"traversable": True, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 1},
+            "dune": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+        }
+        return effets.get(propriete, {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0})
+
+    def appliquer_effet(self, unite):
+        """
+        Applique l'effet de la case à une unité (soins, invisibilité, invincibilité, etc.).
+
+        Paramètres
+        ----------
+        unite : object
+            L'unité affectée par l'effet (à implémenter dans une autre classe).
+        """
+        if not self.effet["traversable"]:
+            raise ValueError("Cette case ne peut pas être traversée !")
+
+        # Appliquer les effets si disponibles
+        if self.effet["soigne"]:
+            unite.vie = min(unite.vie_max, unite.vie + 2)  # Soigne sans dépasser le maximum
+        if self.effet["boost_vitesse"] > 0:
+            unite.vitesse += self.effet["boost_vitesse"]
+        unite.invisible = self.effet["invisible"]
+        unite.invincible = self.effet["invincible"]
+
+    def bloque_balle(self):
+        """
+        Vérifie si cette case bloque les balles.
+
+        Retourne
+        --------
+        bool : True si la case bloque les balles, sinon False.
+        """
+        return self.effet["bloque_balle"]
+
     def draw(self, screen):
         """Affiche les case sur l'écran."""
         
@@ -200,4 +259,3 @@ class Case :
             screen.blit(montagne, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
             pygame.display.flip()
-
