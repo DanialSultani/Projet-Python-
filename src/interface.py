@@ -97,6 +97,19 @@ class Game :
         """Affiche les cases spécifiques de la map actuelle."""
         for case in self.current_map["cases"]:
             case.draw(self.screen )
+
+    def handle_interactions(self):
+        """
+        Gère les interactions entre les unités et les cases de la map actuelle.
+        """
+        for unit in self.player_units + self.enemy_units:
+            for case in self.current_map["cases"]:
+                if case.x == unit.x and case.y == unit.y:
+                    try:
+                        case.appliquer_effet(unit)  # Applique l'effet de la case à l'unité
+                        print(f"Interaction : {unit.deplacement} interagit avec {case.propriete}.")
+                    except ValueError as e:
+                        print(f"Erreur d'interaction : {e}")
             
     
     def all_units_done(self, current_turn):
@@ -171,6 +184,15 @@ class Game :
         # Rafraîchir l'affichage complet
         pygame.display.flip()
 
+    def get_case_at(self, x, y):
+        """
+        Récupère la case à la position (x, y) si elle existe.
+        """
+        for case in self.current_map["cases"]:
+            if case.x == x and case.y == y:
+                return case
+        return None  # Aucune case à cette position
+
 
     def handle_player_turn(self, player_units):
         """
@@ -179,10 +201,13 @@ class Game :
         for unit in player_units:
             unit.reset_distance()  # Réinitialise la distance restante au début du tour
 
-        selected_unit = player_units[0]  # Exemple : on sélectionne toujours la première unité (améliorable)
+        selected_unit = player_units[0]
         has_acted = False
         selected_unit.is_selected = True
         self.flip_display()
+
+        GRID_WIDTH = WIDTH // CELL_SIZE
+        GRID_HEIGHT = HEIGHT // CELL_SIZE
 
         while not has_acted:
             for event in pygame.event.get():
@@ -193,7 +218,7 @@ class Game :
                 if event.type == pygame.KEYDOWN:
                     dx, dy = 0, 0
 
-                    # Déplacement pour les flèches (joueur 1)
+                    # Contrôle du joueur 1
                     if event.key == pygame.K_LEFT:
                         dx = -1
                     elif event.key == pygame.K_RIGHT:
@@ -203,24 +228,37 @@ class Game :
                     elif event.key == pygame.K_DOWN:
                         dy = 1
 
-                    # Déplacement pour les touches ZQSD (joueur 2)
-                    elif event.key == pygame.K_a:  # Gauche
+                    # Contrôle du joueur 2
+                    elif event.key == pygame.K_a:
                         dx = -1
-                    elif event.key == pygame.K_d:  # Droite
+                    elif event.key == pygame.K_d:
                         dx = 1
-                    elif event.key == pygame.K_w:  # Haut
+                    elif event.key == pygame.K_w:
                         dy = -1
-                    elif event.key == pygame.K_s:  # Bas
+                    elif event.key == pygame.K_s:
                         dy = 1
 
-                    # Effectuer le déplacement
-                    selected_unit.move(dx, dy)
-                    self.flip_display()
+                    # Calcul de la nouvelle position
+                    new_x = selected_unit.x + dx
+                    new_y = selected_unit.y + dy
 
-                    # Fin du tour avec espace
+                    print(f"Tentative de déplacement : ({new_x}, {new_y}), Taille de la grille : {GRID_WIDTH}x{GRID_HEIGHT}")
+
+                    # Vérifie si le déplacement est dans les limites
+                    if 0 <= new_x < GRID_WIDTH and 0 <= new_y < GRID_HEIGHT:
+                        selected_unit.move(dx, dy, self)  # Passe l'instance de Game
+                        self.flip_display()
+                    else:
+                        print(f"Déplacement hors des limites de la grille : ({new_x}, {new_y})")
+
+                    # Fin du tour
                     if event.key == pygame.K_SPACE:
                         has_acted = True
                         selected_unit.is_selected = False
+
+
+
+
 
     def play_game(self):
         """
@@ -235,6 +273,9 @@ class Game :
             else:
                 print("Tour du Joueur 2")
                 self.handle_player_turn(self.enemy_units)
+
+            # Gérer les interactions après chaque tour
+            self.handle_interactions()
             
             # Alterne entre les joueurs
             current_player = 2 if current_player == 1 else 1

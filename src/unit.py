@@ -87,8 +87,12 @@ class Unit:
         """Réinitialise la distance restante au maximum pour ce tour."""
         self.distance_remaining = self.max_distance
 
-    def move(self, dx, dy):
-        """Déplace l'unité dans une direction donnée, dans la limite de sa distance restante."""
+    def move(self, dx, dy, game):
+        """
+        Déplace l'unité dans une direction donnée, en tenant compte des cases traversables.
+        dx, dy : Déplacement horizontal et vertical.
+        game : Instance du jeu pour accéder aux cases.
+        """
         distance = abs(dx) + abs(dy)
         if distance > self.distance_remaining:
             print(f"Déplacement non autorisé : il reste {self.distance_remaining} cases.")
@@ -96,12 +100,26 @@ class Unit:
 
         new_x = self.x + dx
         new_y = self.y + dy
-        if 0 <= new_x < WIDTH  and 0 <= new_y < HEIGHT:
+
+        GRID_WIDTH = WIDTH // CELL_SIZE
+        GRID_HEIGHT = HEIGHT // CELL_SIZE
+
+        # Vérifie les limites de la grille
+        if 0 <= new_x < GRID_WIDTH and 0 <= new_y < GRID_HEIGHT:
+            # Vérifie si la case cible est traversable
+            target_case = game.get_case_at(new_x, new_y)
+            if target_case and not target_case.effet.get("traversable", True):
+                print(f"Déplacement bloqué par une case de type {target_case.propriete}.")
+                return
+
+            # Si traversable, effectuer le déplacement
             self.x = new_x
             self.y = new_y
             self.distance_remaining -= distance
         else:
-            print("Déplacement hors des limites de la grille.")
+            print(f"Déplacement hors des limites de la grille : ({new_x}, {new_y})")
+
+
 
     def attack(self, target):
         """Attaque une unité cible si elle est dans le rayon d'attaque."""

@@ -67,13 +67,41 @@ class Case :
         dict : Effets définis pour la case.
         """
         effets = {
+            # Obstacles
             "mur": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "arbre": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "roche": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "dune": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+
+            # Terrains traversables
             "herbe": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
-            "buisson": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": True, "invincible": True, "boost_vitesse": 0},
+            "sable": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "neige": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "glace": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -1},
+
+            # Terrains spéciaux
             "oasis": {"traversable": True, "bloque_balle": False, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "buisson": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": True, "invincible": True, "boost_vitesse": 0},
+            "eau": {"traversable": False, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+
+            # Structures
+            "pont": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "tente": {"traversable": False, "bloque_balle": True, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 0},
+
+            # Objets interactifs
             "chameau": {"traversable": True, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 1},
             "bonhomme_neige": {"traversable": True, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 1},
-            "dune": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+
+            # Zones stratégiques
+            "flag1": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "flag2": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+
+            # Zones bonus/malus
+            "puit": {"traversable": False, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -2},
+            "oasis": {"traversable": True, "bloque_balle": False, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 0},
+
+            # Terrain inconnu
+            "terrain_inconnu": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
         }
         return effets.get(propriete, {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0})
 
@@ -96,6 +124,15 @@ class Case :
             unite.vitesse += self.effet["boost_vitesse"]
         unite.invisible = self.effet["invisible"]
         unite.invincible = self.effet["invincible"]
+            # Vérification de victoire
+        if self.propriete == "flag1" and unite.team == "enemy":
+            print("Victoire de l'équipe adverse !")
+            pygame.quit()
+            exit()
+        if self.propriete == "flag2" and unite.team == "player":
+            print("Victoire de l'équipe du joueur !")
+            pygame.quit()
+            exit()
 
     def bloque_balle(self):
         """
