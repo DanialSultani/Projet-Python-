@@ -3,6 +3,8 @@ import pygame
 # Constantes
 GRID_SIZE = 16
 CELL_SIZE = 50
+WIDTH = (GRID_SIZE * CELL_SIZE)+600
+HEIGHT = GRID_SIZE * CELL_SIZE
 FPS = 30
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -47,7 +49,7 @@ class Unit:
         Dessine l'unité sur la grille.
     """
 
-    def __init__(self, x, y, health, attack_power, team, deplacement):
+    def __init__(self, x, y, health, attack_power, team, deplacement, name=None):
         self.x = x
         self.y = y
         self.health = health
@@ -56,16 +58,17 @@ class Unit:
         self.deplacement = deplacement
         self.is_selected = False
         self.max_health = health
+        self.name = name or f"{team}_{deplacement}"
 
         # Définit la vitesse (distance maximale) et les pouvoirs par type d'unité
         if self.deplacement == 'soldat':
             self.max_distance = 2
             self.attack_power = 1  # Pouvoir d'attaque
-            self.attack_range = 8  # Rayon d'attaque (8 cases autour)
+            self.attack_range = 1  # Rayon d'attaque (8 cases autour)
         elif self.deplacement == 'medecin':  # Correction ici pour le médecin
             self.max_distance = 3  # Distance de déplacement correcte pour le médecin
             self.heal_power = 2  # Pouvoir de guérison
-            self.attack_range = 8  # Rayon d'action (8 cases autour)
+            self.attack_range = 1  # Rayon d'action (8 cases autour)
         elif self.deplacement == 'helico':
             self.max_distance = 4
             self.attack_power = 3  # Pouvoir d'attaque
@@ -94,7 +97,7 @@ class Unit:
 
         new_x = self.x + dx
         new_y = self.y + dy
-        if 0 <= new_x < GRID_SIZE and 0 <= new_y < GRID_SIZE:
+        if 0 <= new_x < WIDTH  and 0 <= new_y < HEIGHT:
             self.x = new_x
             self.y = new_y
             self.distance_remaining -= distance
@@ -120,10 +123,10 @@ class Unit:
         # Charger et redimensionner les sprites
         if self.deplacement == 'soldat':
             sprite = pygame.image.load("Projet-Python-/images/soldat.png")
-            sprite = pygame.transform.scale(sprite, (2 * (CELL_SIZE - 1), 2 * (CELL_SIZE - 1)))
+            sprite = pygame.transform.scale(sprite, (2*CELL_SIZE , 2*CELL_SIZE ))
         elif self.deplacement == 'medecin':
             sprite = pygame.image.load("Projet-Python-/images/medecin.png")
-            sprite = pygame.transform.scale(sprite, (4 * CELL_SIZE, 2 * CELL_SIZE))
+            sprite = pygame.transform.scale(sprite, (2*CELL_SIZE, 2*CELL_SIZE))
         elif self.deplacement == 'helico':
             sprite = pygame.image.load("Projet-Python-/images/helico.png")
             sprite = pygame.transform.scale(sprite, (3 * (CELL_SIZE - 2), 3 * (CELL_SIZE - 2)))
@@ -144,9 +147,9 @@ class Unit:
 
         # Position horizontale centrée
         if self.deplacement == 'soldat':
-            health_x = self.x * CELL_SIZE + (2 * (CELL_SIZE - 1)) // 2 - health_bar // 2
+            health_x = self.x * CELL_SIZE + (2 * (CELL_SIZE )) // 2 - health_bar // 2
         elif self.deplacement == 'medecin':
-            health_x = self.x * CELL_SIZE + (4 * CELL_SIZE) // 2 - health_bar // 2
+            health_x = self.x * CELL_SIZE + (2 * CELL_SIZE) // 2 - health_bar // 2
         elif self.deplacement == 'helico':
             health_x = self.x * CELL_SIZE + (3 * (CELL_SIZE - 2)) // 2 - health_bar // 2
         elif self.deplacement == 'char':

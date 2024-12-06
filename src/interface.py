@@ -6,8 +6,7 @@ from case import *
 # Constantes pour l'adaptation dynamique
 CELL_SIZE = 50
 GRID_SIZE = 16  # Nombre de cellules par dimension
-WIDTH = (GRID_SIZE * CELL_SIZE)+600
-HEIGHT = GRID_SIZE * CELL_SIZE
+
 
 
 # Couleur 
@@ -15,7 +14,7 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GRAY = (50, 50, 50)
 BLUE= (0, 0, 255, 255)
-FPS = 30
+FPS = 60
 
 
 
@@ -43,18 +42,18 @@ class Game :
         screen : pygame.Surface
             La surface de la fenêtre du jeu.
         """
-        self.current_turn = 'player'  # Débute avec le tour du joueur
-        self.selected_unit = None  # Unité sélectionnée
         self.screen = screen
-        self.player_units = [Unit(1, 3, 10, 2, 'player','soldat'),
-                             Unit(1, 4, 10, 2, 'player','medecin'),
-                             Unit(1, 1, 10, 2, 'player','helico')]
+        self.player_units = [Unit(1, 3, 10, 2, 'player','soldat',name='soldat'),
+                             Unit(1, 4, 10, 2, 'player','medecin',name='medecin'),
+                             Unit(1, 1, 10, 2, 'player','helico',name='helico'),
+                             Unit(1, 6, 8, 1, 'player','char',name='char')]
 
-        self.enemy_units = [Unit(20, 9, 8, 1, 'enemy','char'),
-                            Unit(20, 11, 10, 2, 'enemy','medecin'),
-                            Unit(20, 13, 8, 1, 'enemy','soldat')]
+        self.enemy_units = [Unit(20, 9, 8, 1, 'enemy','soldat',name='soldat'),
+                            Unit(20, 11, 10, 2, 'enemy','medecin',name='medecin'),
+                            Unit(20, 13, 8, 1, 'enemy','helico',name='helico'),
+                            Unit(23, 13, 8, 1, 'enemy','char',name='char')]
         
-        # Liste des maps avec un terrain spécifique
+        # Liste des maps avec un terrain spécifique  
         self.maps = [
             { # Map 1
                 "terrain": "Projet-Python-/images/terrain_herbe.png",  # Terrain de la map
@@ -64,7 +63,7 @@ class Game :
                     Case(10, 10, 'buisson'), Case(17, 10, 'buisson'),
                     Case(3, 3, 'puit'), Case(17, 13, 'puit'),
                     Case(0, 3, 'flag1'), Case(21, 13, 'flag2'), # Drapeau 
-                    Case(22, 1, 'arbre'), Case(21, 1, 'arbre'),Case(20, 1, 'arbre'), Case(19, 2, 'arbre'),Case(18, 1, 'arbre'),Case(22, 3, 'arbre'),Case(21, 2, 'arbre'),Case(20, 3, 'arbre'),Case(15, 5, 'arbre'),Case(10, 8, 'arbre'),Case(2, 12, 'arbre'),
+                    Case(22, 1, 'arbre'), Case(20, 1, 'arbre'), Case(19, 2, 'arbre'),Case(18, 1, 'arbre'),Case(22, 3, 'arbre'),Case(21, 2, 'arbre'),Case(20, 3, 'arbre'),Case(22, 4, 'arbre'),Case(15, 5, 'arbre'),Case(10, 8, 'arbre'),Case(2, 12, 'arbre'),
                     Case(0, 12, 'arbre'), Case(-1, 12, 'arbre'), Case(2, 13, 'arbre'),Case(2, 13, 'arbre'),Case(0, 13, 'arbre'),Case(1, 14, 'arbre'),Case(-1, 14, 'arbre'),Case(3, 14, 'arbre') # Arbre 
  # Arbre 
                 ]
@@ -101,18 +100,18 @@ class Game :
         for case in self.current_map["cases"]:
             case.draw(self.screen )
             
+    
     def all_units_done(self, current_turn):
         """
         Vérifie si toutes les unités du joueur ou de l'ennemi ont terminé leurs actions.
-
         current_turn : str
             Le tour actuel, soit 'player' soit 'enemy'.
-
         Retourne :
             bool : True si toutes les unités ont terminé leurs actions, False sinon.
         """
         units = self.player_units if current_turn == 'player' else self.enemy_units
-        return all(unit.distance_remaining == 0 for unit in units)        
+        return all(unit.distance_remaining == 0 for unit in units)   
+    
 
     def flip_display(self):
         """Affiche le jeu uniquement sur la surface dédiée (game_surface)."""
@@ -174,87 +173,107 @@ class Game :
         # Rafraîchir l'affichage complet
         pygame.display.flip()
 
-    def handle_player_turn(self):
-        """Tour du joueur"""
-        for unit in self.player_units:
-            unit.reset_distance()  # Réinitialisation des distances
 
-        for selected_unit in self.player_units:
-            # Tant que l'unité n'a pas terminé son tour
-            has_acted = False
-            selected_unit.is_selected = True
-            self.flip_display()
-            
-            while not has_acted:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        pygame.quit()
-                        exit()
-                
-                    if event.type == pygame.KEYDOWN:
-                        dx, dy = 0, 0
+    def handle_unit_turn(self, units, current_turn):
+        """
+        Gère le tour d'un camp, permet de choisir et déplacer une unité.
+        """
+        selected_unit = None
+        has_acted = False
 
-                        # Déplacement
-                        if event.key == pygame.K_LEFT:
-                            dx = -1
-                        elif event.key == pygame.K_RIGHT:
-                            dx = 1
-                        elif event.key == pygame.K_UP:
-                            dy = -1
-                        elif event.key == pygame.K_DOWN:
-                            dy = 1
-                         
-                        
-                        selected_unit.move(dx, dy)
+        while not has_acted:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+
+                if event.type == pygame.KEYDOWN:
+                    # Sélection d'une unité
+                    if event.key == pygame.K_z and len(units) > 0:
+                        selected_unit = units[0]
+                    elif event.key == pygame.K_q and len(units) > 1:
+                        selected_unit = units[1]
+                    elif event.key == pygame.K_s and len(units) > 2:
+                        selected_unit = units[2] 
+                    elif event.key == pygame.K_d and len(units) > 3:
+                        selected_unit = units[3]
+
+                    # Si une unité est sélectionnée
+                    if selected_unit:
+                        print(f"{selected_unit.name} est sélectionné.")
                         self.flip_display()
 
-                        # Option d'attaque avec 'a'
-                        if event.key == pygame.K_a:
-                            for enemy in self.enemy_units:
-                                if abs(selected_unit.x - enemy.x) <= 1 and abs(selected_unit.y - enemy.y) <= 1:
-                                    selected_unit.attack(enemy)
-                                    print(f"{selected_unit} attaque {enemy} !")
-                                    
-                                    if enemy.health <= 0:
-                                        print(f"{enemy} est éliminé !")
-                                        self.enemy_units.remove(enemy)
-                                    
-                                    has_acted = True  # Fin du tour après une attaque
-                                    selected_unit.is_selected = False
-                                    break
+                    # Déplacement de l'unité sélectionnée
+                    if selected_unit:
+                        dx, dy = 0, 0
 
-                        # Finir le tour avec la touche 'espace'
+                        # Contrôles pour déplacer l'unité
+                        if event.key == pygame.K_UP or event.key == pygame.K_w:
+                            dy = -1
+                        elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
+                            dy = 1
+                        elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
+                            dx = -1
+                        elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
+                            dx = 1
+
+                        # Valider le déplacement
+                        if abs(dx) + abs(dy) <= selected_unit.distance_remaining:
+                            selected_unit.move(dx, dy)
+                            print(f"{selected_unit.name} se déplace à ({dx}, {dy}).")
+                            self.flip_display()
+
+                        # Fin du tour
                         if event.key == pygame.K_SPACE:
+                            print(f"{selected_unit.name} a terminé son tour.")
+                            selected_unit.distance_remaining = 0  # Unité ne peut plus se déplacer ce tour
                             has_acted = True
-                            selected_unit.is_selected = False
 
+    def play_game(self):
+        current_turn = 'player'
 
-    def handle_enemy_turn(self):
-        """IA très simple pour les ennemis."""
-        for unit in self.enemy_units:
-            unit.reset_distance()
+        while self.player_units and self.enemy_units:
+            if current_turn == 'player':
+                print("Tour du joueur.")
+                for unit in self.player_units:
+                    unit.reset_distance()
+                self.handle_unit_turn(self.player_units, current_turn)
+            else:
+                print("Tour de l'ennemi.")
+                for unit in self.enemy_units:
+                    unit.reset_distance()
+                self.handle_unit_turn(self.enemy_units, current_turn)
 
-        for enemy in self.enemy_units:
-            # Choix aléatoire d'une cible parmi les unités du joueur
-            target = random.choice(self.player_units)
+            # Alterner les tours
+            current_turn = 'enemy' if current_turn == 'player' else 'player'
 
-            # Calcul du déplacement
-            dx = 1 if enemy.x < target.x else -1 if enemy.x > target.x else 0
-            dy = 1 if enemy.y < target.y else -1 if enemy.y > target.y else 0
-
-            # Application du déplacement
-            enemy.x += dx
-            enemy.y += dy
-
-            # Vérification pour attaquer si à portée
-            if abs(enemy.x - target.x) <= 1 and abs(enemy.y - target.y) <= 1:
-                print(f"Enemy at ({enemy.x}, {enemy.y}) attaque Player at ({target.x}, {target.y})")
-                target.health -= enemy.attack_power
-
-                # Supprime l'unité du joueur si elle est morte
-                if target.health <= 0:
-                    self.player_units.remove(target)
-
-        # Tour des ennemis terminé, le jeu continue normalement
-        print("Fin du tour des ennemis.")
-
+    def calculate_move_simple(self, enemy, dx, dy, max_distance=None, prioritize_horizontal=False):
+        """
+        Calcul simplifié des déplacements pour une unité ennemie.
+        Parameters:
+            enemy (Unit): L'unité ennemie qui se déplace.
+            dx (int): Distance horizontale vers la cible.
+            dy (int): Distance verticale vers la cible.
+            max_distance (int): Distance maximale autorisée (facultatif).
+            prioritize_horizontal (bool): Prioriser les mouvements horizontaux (facultatif).
+        Returns:
+            (int, int): Déplacement optimal en x et y.
+        """
+        max_distance = max_distance if max_distance is not None else enemy.distance_remaining
+        move_x, move_y = 0, 0
+        if prioritize_horizontal:
+            # Bouge d'abord horizontalement, puis verticalement
+            if abs(dx) > 0:
+                move_x = 1 if dx > 0 else -1
+            elif abs(dy) > 0:
+                move_y = 1 if dy > 0 else -1
+        else:
+            # Bouge dans la direction la plus éloignée
+            if abs(dx) >= abs(dy):
+                move_x = 1 if dx > 0 else -1
+            elif abs(dy) > 0:
+                move_y = 1 if dy > 0 else -1
+        # Ajuster pour ne pas dépasser la distance maximale
+        move_x = max(-max_distance, min(max_distance, move_x))
+        move_y = max(-max_distance, min(max_distance - abs(move_x), move_y))
+        return move_x, move_y
