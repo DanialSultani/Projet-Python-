@@ -248,7 +248,6 @@ def settings_menu(screen):
 
         # Mettre à jour l'affichage
         pygame.display.flip()
-
-
+        
 if __name__ == "__main__":
     main()

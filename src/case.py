@@ -1,5 +1,6 @@
 import pygame
 import random
+from utils import show_victory_screen
 
 # Constantes pour l'adaptation dynamique
 CELL_SIZE = 50
@@ -105,14 +106,16 @@ class Case :
         }
         return effets.get(propriete, {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0})
 
-    def appliquer_effet(self, unite):
+    def appliquer_effet(self, unite, screen):
         """
         Applique l'effet de la case à une unité (soins, invisibilité, invincibilité, etc.).
 
         Paramètres
         ----------
-        unite : object
-            L'unité affectée par l'effet (à implémenter dans une autre classe).
+        unite : Unit
+            L'unité affectée par l'effet.
+        screen : pygame.Surface
+            L'écran de jeu pour afficher des messages ou des effets.
         """
         if not self.effet["traversable"]:
             raise ValueError("Cette case ne peut pas être traversée !")
@@ -124,15 +127,12 @@ class Case :
             unite.vitesse += self.effet["boost_vitesse"]
         unite.invisible = self.effet["invisible"]
         unite.invincible = self.effet["invincible"]
-            # Vérification de victoire
+
+        # Vérification de victoire
         if self.propriete == "flag1" and unite.team == "enemy":
-            print("Victoire de l'équipe adverse !")
-            pygame.quit()
-            exit()
-        if self.propriete == "flag2" and unite.team == "player":
-            print("Victoire de l'équipe du joueur !")
-            pygame.quit()
-            exit()
+            show_victory_screen(screen, "enemy")
+        elif self.propriete == "flag2" and unite.team == "player":
+            show_victory_screen(screen, "player")
 
     def bloque_balle(self):
         """

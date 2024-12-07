@@ -49,7 +49,7 @@ class Unit:
         Dessine l'unité sur la grille.
     """
 
-    def __init__(self, x, y, health, attack_power, team, deplacement):
+    def __init__(self, x, y, health, attack_power, team, deplacement, name=None):
         self.x = x
         self.y = y
         self.health = health
@@ -58,66 +58,108 @@ class Unit:
         self.deplacement = deplacement
         self.is_selected = False
         self.max_health = health
+        self.name = name or f"{team}_{deplacement}"
 
-        # Définit la vitesse (distance maximale) et les pouvoirs par type d'unité
+        # Initialisation des capacités selon le type d'unité
         if self.deplacement == 'soldat':
-            self.max_distance = 2
+            self.max_distance = 8  # Distance maximale (8 cases)
             self.attack_power = 1  # Pouvoir d'attaque
-            self.attack_range = 1  # Rayon d'attaque (8 cases autour)
-        elif self.deplacement == 'medecin':  # Correction ici pour le médecin
-            self.max_distance = 3  # Distance de déplacement correcte pour le médecin
-            self.heal_power = 2  # Pouvoir de guérison
-            self.attack_range = 1  # Rayon d'action (8 cases autour)
+            self.attack_range = 1  # Rayon d'attaque
+        elif self.deplacement == 'medecin':
+            self.max_distance = 8  # Distance de déplacement
+            self.heal_power = 2    # Pouvoir de guérison
+            self.attack_range = 1  # Rayon d'action
         elif self.deplacement == 'helico':
-            self.max_distance = 4
+            self.max_distance = 4  # Distance maximale (4 cases)
             self.attack_power = 3  # Pouvoir d'attaque
-            self.attack_range = 3  # Rayon d'attaque (3 cases en dessous)
+            self.attack_range = 3  # Rayon d'attaque
         elif self.deplacement == 'char':
-            self.max_distance = 6
+            self.max_distance = 2  # Distance maximale (2 cases)
             self.attack_power = 3  # Pouvoir d'attaque
-            self.attack_range = 2  # Rayon d'attaque (2 cases)
+            self.attack_range = 2  # Rayon d'attaque
         else:
-            self.max_distance = 1  # Par défaut
+            # Valeurs par défaut pour une unité inconnue
+            self.max_distance = 1
             self.attack_power = 0
             self.attack_range = 0
 
-        self.distance_remaining = self.max_distance  # Initialisation correcte
+        # Distance restante au début d'un tour
+        self.distance_remaining = self.max_distance
 
     def reset_distance(self):
         """Réinitialise la distance restante au maximum pour ce tour."""
         self.distance_remaining = self.max_distance
 
-    def move(self, dx, dy, game):
+    def move(self, direction, game):
         """
-        Déplace l'unité dans une direction donnée, en tenant compte des cases traversables.
-        dx, dy : Déplacement horizontal et vertical.
-        game : Instance du jeu pour accéder aux cases.
+        Déplace l'unité dans une direction donnée si le déplacement est autorisé.
+
+        Parameters:
+        ----------
+        direction : str
+            La direction dans laquelle déplacer l'unité ('up', 'down', 'left', 'right').
+        game : Game
+            L'instance du jeu pour accéder aux cases et vérifier les déplacements autorisés.
         """
-        distance = abs(dx) + abs(dy)
-        if distance > self.distance_remaining:
-            print(f"Déplacement non autorisé : il reste {self.distance_remaining} cases.")
+        # Calcul des nouvelles coordonnées en fonction de la direction
+        new_x, new_y = self.x, self.y
+        if direction == "up":
+            new_y -= 1
+        elif direction == "down":
+            new_y += 1
+        elif direction == "left":
+            new_x -= 1
+        elif direction == "right":
+            new_x += 1
+        else:
+            print(f"Direction invalide : {direction}")
             return
 
-        new_x = self.x + dx
-        new_y = self.y + dy
-
-        GRID_WIDTH = WIDTH // CELL_SIZE
-        GRID_HEIGHT = HEIGHT // CELL_SIZE
-
-        # Vérifie les limites de la grille
-        if 0 <= new_x < GRID_WIDTH and 0 <= new_y < GRID_HEIGHT:
+        # Vérifie les limites de déplacement (distance autorisée)
+        cases_autorisees = self.get_deplacement_autorise(game)
+        if (new_x, new_y) in cases_autorisees:
             # Vérifie si la case cible est traversable
             target_case = game.get_case_at(new_x, new_y)
-            if target_case and not target_case.effet.get("traversable", True):
-                print(f"Déplacement bloqué par une case de type {target_case.propriete}.")
-                return
-
-            # Si traversable, effectuer le déplacement
-            self.x = new_x
-            self.y = new_y
-            self.distance_remaining -= distance
+            if target_case and target_case.effet.get("traversable", True):
+                # Mettre à jour la position de l'unité
+                self.x, self.y = new_x, new_y
+                self.distance_remaining -= 1  # Réduit la distance restante pour ce tour
+                print(f"{self.name} déplacé à ({self.x}, {self.y}). Distance restante : {self.distance_remaining}.")
+            else:
+                print(f"Déplacement bloqué : case non traversable à ({new_x}, {new_y}).")
         else:
-            print(f"Déplacement hors des limites de la grille : ({new_x}, {new_y})")
+            print(f"Déplacement interdit : hors du rayon de déplacement autorisé ({new_x}, {new_y}).")
+
+
+
+    def get_deplacement_autorise(self, game):
+        """
+        Calcule les cases accessibles selon la position actuelle et la distance maximale.
+
+        Parameters:
+        ----------
+        game : Game
+            Instance du jeu pour accéder aux cases et vérifier les traversabilités.
+
+        Returns:
+        -------
+        List[Tuple[int, int]] : Liste des coordonnées accessibles.
+        """
+        cases_accessibles = []
+        for dx in range(-self.max_distance, self.max_distance + 1):
+            for dy in range(-self.max_distance, self.max_distance + 1):
+                new_x = self.x + dx
+                new_y = self.y + dy
+
+                # Vérifie si les coordonnées sont dans les limites de la grille
+                if 0 <= new_x < game.GRID_WIDTH and 0 <= new_y < game.GRID_HEIGHT:
+                    target_case = game.get_case_at(new_x, new_y)
+
+                    # Vérifie si la case est traversable
+                    if target_case and target_case.effet.get("traversable", True):
+                        cases_accessibles.append((new_x, new_y))
+        return cases_accessibles
+
 
 
 
