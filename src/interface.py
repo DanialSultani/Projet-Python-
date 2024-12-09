@@ -1,6 +1,7 @@
 import pygame
 import random
 from unit import *
+from game import *
 from case import *
 from case import Case
 
@@ -44,54 +45,59 @@ class Game :
         screen : pygame.Surface
             La surface de la fenêtre du jeu.
         """
+        
         self.screen = screen
-        self.CELL_SIZE = 50  # Taille d'une cellule
-        self.GRID_WIDTH = screen.get_width() // self.CELL_SIZE  # Largeur en cellules
-        self.GRID_HEIGHT = screen.get_height() // self.CELL_SIZE  # Hauteur en cellules
 
-        self.player_units = [Unit(1, 3, 10, 2, 'player','soldat',name='soldat'),
-                             Unit(1, 4, 10, 2, 'player','medecin',name='medecin'),
-                             Unit(1, 1, 10, 2, 'player','helico',name='helico'),
-                             Unit(1, 6, 8, 1, 'player','char',name='char')]
+        self.player1_units = [Unit(2, 2,  'player1','soldat'),
+                             Unit(1, 2, 'player1','medecin'),
+                             Unit(1, 0, 'player1','helico'),
+                             Unit(0, 1, 'player1','char')]
 
-        self.enemy_units = [Unit(20, 9, 8, 1, 'enemy','soldat',name='soldat'),
-                            Unit(20, 11, 10, 2, 'enemy','medecin',name='medecin'),
-                            Unit(20, 13, 8, 1, 'enemy','helico',name='helico'),
-                            Unit(23, 13, 8, 1, 'enemy','char',name='char')]
+        self.player2_units = [Unit(20, 12, 'player2','soldat'),
+                            Unit(21, 12, 'player2','medecin'),
+                            Unit(20, 14, 'player2','helico'),
+                            Unit(22, 13, 'player2','char')]
         
         # Liste des maps avec un terrain spécifique  
         self.maps = [
-            { # Map 1
+            { # Map 1: Foret
                 "terrain": "images/terrain_herbe.png",  # Terrain de la map
                 "cases": [  # Cases spécifiques de la map
-                    Case(10, 9, 'boue'), Case(4, 5, 'boue'),
-                    Case(19, 14, 'roche'), Case(0, 1, 'roche'),
-                    Case(10, 10, 'buisson'), Case(17, 10, 'buisson'),
-                    Case(3, 3, 'puit'), Case(17, 13, 'puit'),
-                    Case(0, 3, 'flag1'), Case(21, 13, 'flag2'), # Drapeau 
-                    Case(22, 1, 'arbre'), Case(20, 1, 'arbre'), Case(19, 2, 'arbre'),Case(18, 1, 'arbre'),Case(22, 3, 'arbre'),Case(21, 2, 'arbre'),Case(20, 3, 'arbre'),Case(22, 4, 'arbre'),Case(15, 5, 'arbre'),Case(10, 8, 'arbre'),Case(2, 12, 'arbre'),
-                    Case(0, 12, 'arbre'), Case(-1, 12, 'arbre'), Case(2, 13, 'arbre'),Case(2, 13, 'arbre'),Case(0, 13, 'arbre'),Case(1, 14, 'arbre'),Case(-1, 14, 'arbre'),Case(3, 14, 'arbre') # Arbre 
- # Arbre 
+                    Case(22, 1, 'arbre'), Case(18, 1, 'arbre'), Case(13, 1, 'arbre'), Case(7, 2, 'arbre'),
+                    Case(16, 3, 'tronc'), Case(20, 4, 'arbre'), Case(11, 4, 'tronc'), Case(17, 8, 'arbre'),
+                    Case(4, 6, 'arbre'), Case(0, 7, 'arbre'), Case(12, 7, 'arbre'), Case(21, 7, 'arbre'),
+                    Case(7, 9, 'arbre'), Case(18, 10, 'arbre'), Case(3, 11, 'arbre'), Case(13, 12, 'tronc'),
+                    Case(0, 13, 'arbre'), Case(18, 13, 'arbre'),
+                    Case(10, 3, 'tronc'), Case(15, 13, 'tronc'),Case(15, 3, 'tronc'), Case(12, 13, 'tronc'),Case(18, 6, 'tronc'), Case(1, 13, 'tronc'),
+                    Case(4, 13, 'boue'), Case(3, 11, 'boue'),Case(10, 8, 'boue'),Case(7, 4, 'boue'),Case(17, 7, 'boue'),
+                    Case(19, 14, 'brin'), Case(0, 1, 'brin'),
+                    Case(5, 1, 'buisson'), Case(10, 2, 'buisson'),Case(3, 5, 'buisson'),Case(11, 6, 'buisson'),Case(8, 7, 'buisson'),Case(0, 10, 'buisson'),Case(21, 10, 'buisson'),Case(12, 16, 'buisson'),Case(3, 13, 'buisson'),
+                    Case(3, 1, 'puit'), Case(17, 13, 'puit'),
+                    Case(6, 4, 'mur'), Case(18, 12, 'mur'),
+                    Case(0, 1, 'flag1'), Case(22, 14, 'flag2'), # Drapeau 
+
                 ]
             },
-            { # Map 2
+            { # Map 2 : Desert
                 "terrain": "images/terrain_sables.png",
                 "cases": [
                     Case(0, 0, 'dune'), Case(3, 0, 'dune'), Case(6, 0, 'dune'), Case(9, 0, 'dune'),Case(12, 0, 'dune'),Case(15, 0, 'dune'),Case(17, 0, 'dune'),Case(20, 0, 'dune'),Case(23, 0, 'dune'),Case(25, 0, 'dune'),
                     Case(0, 11, 'flag1'), Case(22, 12, 'flag2'),
                     Case(3, 9, 'dune2'), Case(3, 8, 'dune2'),Case(10, 3, 'dune2'),
                     Case(10, 10, 'tente'), Case(2, 3, 'tente'),
+                    Case(12, 10, 'chameau'), Case(2, 3, 'chameau'),
                     Case(0, 13, 'oasis'), Case(2, 13, 'oasis'), Case(19, 13, 'oasis'), Case(21, 13, 'oasis')
                 ]
             }
             ,
-            { # Map 3
+            { # Map 3 : Neige
                 "terrain": "images/terrain_neige.png",
                 "cases": [
                     Case(24, 0, 'montagne'), Case(21, 0, 'montagne'), Case(18, 0, 'montagne'), Case(15, 0, 'montagne'), Case(12, 0, 'montagne'),Case(9, 0, 'montagne'),Case(6, 0, 'montagne'),Case(3, 0, 'montagne'),Case(-1, 0, 'montagne'),
                     Case(0, 7, 'flag1'), Case(15, 7, 'flag2'),
                     Case(10, 10, 'glace'), Case(5, 3, 'glace'),Case(5, 4, 'glace'),
                     Case(12, 10, 'bonhomme'), Case(2, 3, 'bonhomme'),
+                    Case(12, 12, 'feu'), Case(2, 2, 'feu'),
                     Case(22, 1, 'sapin'), Case(21, 1, 'sapin'),Case(20, 1, 'sapin'), Case(19, 2, 'sapin'),Case(18, 1, 'sapin'),Case(22, 3, 'sapin'),Case(21, 2, 'sapin'),Case(20, 3, 'sapin'),Case(15, 5, 'sapin'),Case(10, 8, 'sapin'),Case(2, 12, 'sapin'),
                     Case(0, 12, 'sapin'), Case(-1, 12, 'sapin'), Case(2, 13, 'sapin'),Case(2, 13, 'sapin'),Case(0, 13, 'sapin'),Case(1, 14, 'sapin'),Case(-1, 14, 'sapin'),Case(0, 14, 'sapin'),Case(2, 14, 'sapin'),Case(3, 14, 'sapin'),Case(4, 14, 'sapin'),Case(5, 14, 'sapin'),Case(6, 14, 'sapin'),Case(7, 14, 'sapin'),Case(8, 14, 'sapin'),Case(9, 14, 'sapin'),Case(10, 14, 'sapin') # Sapin
                 ]
@@ -99,7 +105,7 @@ class Game :
         ]
 
         # Sélection d'une map aléatoire
-        self.current_map = self.maps[0]
+        self.current_map = self.maps[choose_map(screen)]
 
         # Initialisation de la grille avec toutes les cases traversables
         self.initialiser_grille()
@@ -111,8 +117,8 @@ class Game :
         """
         traversable_cases = []
         # Parcourt toutes les positions de la grille
-        for x in range(self.GRID_WIDTH):
-            for y in range(self.GRID_HEIGHT):
+        for x in range(WIDTH):
+            for y in range(HEIGHT):
                 # Vérifie si une case environnementale existe déjà ici
                 existing_case = self.get_case_at(x, y)
                 if existing_case:
@@ -134,7 +140,7 @@ class Game :
         """
         Gère les interactions entre les unités et les cases de la map actuelle.
         """
-        for unit in self.player_units + self.enemy_units:
+        for unit in self.player1_units + self.player2_units:
             for case in self.current_map["cases"]:
                 if case.x == unit.x and case.y == unit.y:
                     try:
@@ -151,9 +157,11 @@ class Game :
         Retourne :
             bool : True si toutes les unités ont terminé leurs actions, False sinon.
         """
-        units = self.player_units if current_turn == 'player' else self.enemy_units
-        return all(unit.distance_remaining == 0 for unit in units)   
-    
+        units = self.player1_units if current_turn == 'player1' else self.player2_units
+        return all(unit.distance_remaining == 0 for unit in units)  
+        
+
+
     def flip_display(self):
         """Affiche le jeu uniquement sur la surface dédiée (game_surface)."""
 
@@ -192,7 +200,7 @@ class Game :
             case.draw(game_surface)
 
         # Afficher les unités sur la surface de jeu
-        for unit in self.player_units + self.enemy_units:
+        for unit in self.player1_units+ self.player2_units:
             unit.draw(game_surface)
 
         # Blitter la surface de jeu (game_surface) sur la fenêtre principale (screen)
@@ -201,18 +209,15 @@ class Game :
         # Dessiner le panneau latéral (1/4 de la fenêtre) pour les options, pouvoirs, etc.
         sidebar_width = WIDTH - game_width  # 1/4 de la largeur
         sidebar_surface = pygame.Surface((sidebar_width, HEIGHT))
-        sidebar_surface.fill((30, 30, 30))  # Fond sombre pour le panneau
+        back_lat= pygame.image.load("images/back_lateral.png")
+        back_lat= pygame.transform.scale(back_lat, (3*sidebar_width , HEIGHT))
+        sidebar_surface.blit(back_lat,(-200, 0))  # Fond sombre pour le panneau
 
-        # Afficher des exemples de texte ou icônes sur le panneau latéral
-        font = pygame.font.SysFont("Arial", 20)
-        text = font.render("Options de jeu :", True, (255, 255, 255))
-        sidebar_surface.blit(text, (10, 10))
-
-        # Blitter la surface du panneau latéral sur la fenêtre principale
+        
+        # Rafraîchir l'affichage
         self.screen.blit(sidebar_surface, (game_width, 0))
-
-        # Rafraîchir l'affichage complet
         pygame.display.flip()
+
 
     def get_case_at(self, x, y):
         """
@@ -225,11 +230,40 @@ class Game :
             if case.x == x and case.y == y:
                 return case
         # Par défaut, retourne une case traversable si elle est dans la grille
-        if 0 <= x < self.GRID_WIDTH and 0 <= y < self.GRID_HEIGHT:
+        if 0 <= x < WIDTH and 0 <= y < HEIGHT:
             return Case(x, y, "herbe")  # Case traversable par défaut
         return None
 
+    def draw_instructions_select_unit(self):
+        """
+        Dessine les instructions pour sélectionner une unité.
+        """
+        # Effacer la zone de la bande latérale
+        game_width = int(WIDTH * 0.85)  # 3/4 de la largeur
+        sidebar_width = WIDTH - game_width  # 1/4 de la largeur
+        sidebar_surface = pygame.Surface((sidebar_width, HEIGHT))
+        back_lat= pygame.image.load("images/back_lateral.png")
+        back_lat= pygame.transform.scale(back_lat, (3*sidebar_width , HEIGHT))
+        sidebar_surface.blit(back_lat,(-200, 0))  # Fond sombre pour le panneau
 
+        # Texte des instructions
+        instructions = [
+            "Selectionnez une unite :",
+            "Z - Soldat",
+            "Q - Medecin",
+            "S - Helico",
+            "D - Tank",
+        ]
+
+        # Dessiner chaque ligne d'instruction
+        font = pygame.font.Font("images/GameBoy.ttf", 10)
+        y = 150
+        for line in instructions:
+                text = font.render(line, True, WHITE)
+                self.screen.blit(text, (game_width, y))
+                y += 30
+
+    
 
     def handle_unit_turn(self, player_units, current_turn):
         """
@@ -244,81 +278,69 @@ class Game :
         """
         for unit in player_units:
             unit.reset_distance()
-
-        selected_unit = player_units[0]
+        selected_unit = None
         has_acted = False
-        selected_unit.is_selected = True
-        self.flip_display()
+        self.draw_instructions_select_unit()
+
+        
 
         while not has_acted:
+
             for event in pygame.event.get():
+                
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
-
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
-                        selected_unit.move("up", self)
-                    elif event.key == pygame.K_DOWN:
-                        selected_unit.move("down", self)
-                    elif event.key == pygame.K_LEFT:
-                        selected_unit.move("left", self)
-                    elif event.key == pygame.K_RIGHT:
-                        selected_unit.move("right", self)
+                    # Sélection d'une unité
+                    if event.key == pygame.K_z and len(player_units) > 0:
+                        selected_unit = player_units[0]
+                    elif event.key == pygame.K_q and len(player_units) > 1:
+                        selected_unit =player_units[1]
+                    elif event.key == pygame.K_s and len(player_units) > 2:
+                        selected_unit = player_units[2] 
+                    elif event.key == pygame.K_d and len(player_units) > 3:
+                        selected_unit = player_units[3]
 
-                    # Met à jour l'affichage
-                    self.flip_display()
+                    # Si une unité est sélectionnée
+                    if selected_unit:
+                        print(f"{selected_unit.name} est sélectionné.")
+                        self.flip_display()
 
-                    # Fin du tour avec la touche ESPACE
-                    if event.key == pygame.K_SPACE:
-                        has_acted = True
-                        selected_unit.is_selected = False
+                        if event.key == pygame.K_UP:
+                            selected_unit.move("up", self)
+                        elif event.key == pygame.K_DOWN:
+                            selected_unit.move("down", self)
+                        elif event.key == pygame.K_LEFT:
+                            selected_unit.move("left", self)
+                        elif event.key == pygame.K_RIGHT:
+                            selected_unit.move("right", self)
+
+                        # Met à jour l'affichage
+                        self.flip_display()
+
+                        # Fin du tour avec la touche ESPACE
+                        if event.key == pygame.K_SPACE:
+                            has_acted = True
+                            selected_unit.is_selected = False
+
 
     def play_game(self):
-        current_turn = 'player'
+        current_turn = 'player1'
 
-        while self.player_units and self.enemy_units:
-            if current_turn == 'player':
-                print("Tour du joueur.")
-                for unit in self.player_units:
+        while self.player1_units and self.player2_units:
+            if current_turn == 'player1':
+                print("Tour du joueur 1.")
+                for unit in self.player1_units:
                     unit.reset_distance()
-                self.handle_unit_turn(self.player_units, current_turn)
+                self.handle_unit_turn(self.player1_units, current_turn)
             else:
-                print("Tour de l'ennemi.")
-                for unit in self.enemy_units:
+                print("TTour du joueur 2.")
+                for unit in self.player2_units:
                     unit.reset_distance()
-                self.handle_unit_turn(self.enemy_units, current_turn)
+                self.handle_unit_turn(self.player2_units, current_turn)
 
             # Alterner les tours
-            current_turn = 'enemy' if current_turn == 'player' else 'player'
+            current_turn = 'player2' if current_turn == 'player1' else 'player1'
 
-    def calculate_move_simple(self, enemy, dx, dy, max_distance=None, prioritize_horizontal=False):
-        """
-        Calcul simplifié des déplacements pour une unité ennemie.
-        Parameters:
-            enemy (Unit): L'unité ennemie qui se déplace.
-            dx (int): Distance horizontale vers la cible.
-            dy (int): Distance verticale vers la cible.
-            max_distance (int): Distance maximale autorisée (facultatif).
-            prioritize_horizontal (bool): Prioriser les mouvements horizontaux (facultatif).
-        Returns:
-            (int, int): Déplacement optimal en x et y.
-        """
-        max_distance = max_distance if max_distance is not None else enemy.distance_remaining
-        move_x, move_y = 0, 0
-        if prioritize_horizontal:
-            # Bouge d'abord horizontalement, puis verticalement
-            if abs(dx) > 0:
-                move_x = 1 if dx > 0 else -1
-            elif abs(dy) > 0:
-                move_y = 1 if dy > 0 else -1
-        else:
-            # Bouge dans la direction la plus éloignée
-            if abs(dx) >= abs(dy):
-                move_x = 1 if dx > 0 else -1
-            elif abs(dy) > 0:
-                move_y = 1 if dy > 0 else -1
-        # Ajuster pour ne pas dépasser la distance maximale
-        move_x = max(-max_distance, min(max_distance, move_x))
-        move_y = max(-max_distance, min(max_distance - abs(move_x), move_y))
-        return move_x, move_y
+    

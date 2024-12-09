@@ -72,26 +72,25 @@ class Case :
             "mur": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "arbre": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "roche": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
-            "dune": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
 
             # Terrains traversables
             "herbe": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
-            "sable": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
-            "neige": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
-            "glace": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -1},
+            "sable": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -1},
+            "neige": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -1},
+            "glace": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -2},
 
             # Terrains spéciaux
-            "oasis": {"traversable": True, "bloque_balle": False, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "oasis": {"traversable": True, "bloque_balle": False, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 1},
             "buisson": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": True, "invincible": True, "boost_vitesse": 0},
-            "eau": {"traversable": False, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "eau": {"traversable": False, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -1},
 
             # Structures
             "pont": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "tente": {"traversable": False, "bloque_balle": True, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 0},
 
             # Objets interactifs
-            "chameau": {"traversable": True, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 1},
-            "bonhomme_neige": {"traversable": True, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 1},
+            "chameau": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 2},
+            "feu": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
 
             # Zones stratégiques
             "flag1": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
@@ -99,34 +98,34 @@ class Case :
 
             # Zones bonus/malus
             "puit": {"traversable": False, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -2},
-            "oasis": {"traversable": True, "bloque_balle": False, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 0},
-
-            # Terrain inconnu
-            "terrain_inconnu": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "montagne": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "lava": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -5},
         }
+
+        # Si la propriété n'est pas définie, retour par défaut
         return effets.get(propriete, {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0})
 
-    def appliquer_effet(self, unite, screen):
+    def appliquer_effets_case(self, case, screen):
         """
-        Applique l'effet de la case à une unité (soins, invisibilité, invincibilité, etc.).
+        Applique les effets de la case actuelle à l'unité.
 
-        Paramètres
+        Parameters:
         ----------
-        unite : Unit
-            L'unité affectée par l'effet.
+        case : Case
+            La case sur laquelle l'unité se trouve.
         screen : pygame.Surface
-            L'écran de jeu pour afficher des messages ou des effets.
+            L'écran pour afficher les effets visuels ou les messages.
         """
-        if not self.effet["traversable"]:
-            raise ValueError("Cette case ne peut pas être traversée !")
-
-        # Appliquer les effets si disponibles
-        if self.effet["soigne"]:
-            unite.vie = min(unite.vie_max, unite.vie + 2)  # Soigne sans dépasser le maximum
-        if self.effet["boost_vitesse"] > 0:
-            unite.vitesse += self.effet["boost_vitesse"]
-        unite.invisible = self.effet["invisible"]
-        unite.invincible = self.effet["invincible"]
+        if case.effet["soigne"]:
+            self.health = min(self.max_health, self.health + 2)
+            print(f"{self.name} soigné à {self.health}/{self.max_health} points de vie.")
+        if case.effet["boost_vitesse"] != 0:
+            self.distance_remaining += case.effet["boost_vitesse"]
+            print(f"Vitesse temporaire augmentée pour {self.name}. Distance restante : {self.distance_remaining}.")
+        if case.effet["invisible"]:
+            print(f"{self.name} devient invisible !")
+        if case.effet["invincible"]:
+            print(f"{self.name} devient invincible temporairement.")
 
         # Vérification de victoire
         if self.propriete == "flag1" and unite.team == "enemy":
@@ -166,9 +165,17 @@ class Case :
         # Map foret
         # Afficher les murs
         elif self.propriete == 'mur':
-            mur = pygame.image.load("images/mur.webp")
+            mur = pygame.image.load("images/mur.png")
             mur = pygame.transform.scale(mur,  (CELL_SIZE, CELL_SIZE))  
             screen.blit(mur, (self.x * CELL_SIZE,
+                                self.y * CELL_SIZE))
+            pygame.display.flip()
+
+        # Afficher les tronc
+        elif self.propriete == 'tronc':
+            tronc = pygame.image.load("images/tronc.png")
+            tronc = pygame.transform.scale(tronc,  (2*CELL_SIZE, 2*CELL_SIZE))  
+            screen.blit(tronc, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
             pygame.display.flip()
 
@@ -197,17 +204,17 @@ class Case :
             pygame.display.flip()
 
         # Afficher la montagne
-        elif self.propriete == 'roche':
-            roche = pygame.image.load("images/roche.png")
-            roche= pygame.transform.scale(roche,  (2*CELL_SIZE, 2*CELL_SIZE))  
-            screen.blit(roche, (self.x * CELL_SIZE,
+        elif self.propriete == 'brin':
+            brin = pygame.image.load("images/brin.png")
+            brin= pygame.transform.scale(brin,  (CELL_SIZE, CELL_SIZE))  
+            screen.blit(brin, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
             pygame.display.flip()
 
         # Afficher le puit
         elif self.propriete == 'puit':
             puit = pygame.image.load("images/puit.png")
-            puit= pygame.transform.scale(puit,  (2*CELL_SIZE, CELL_SIZE))  
+            puit= pygame.transform.scale(puit,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(puit, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
             pygame.display.flip()
