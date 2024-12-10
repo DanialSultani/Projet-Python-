@@ -43,7 +43,6 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-
         game.play_game()
         clock.tick(FPS)
 
@@ -53,13 +52,14 @@ def main_menu(screen, fresque):
     font = pygame.font.Font("Projet-Python-/images/GameBoy.ttf", 15)
 
     # Textes du menu
-    menu_options = ["Press ENTER to start ", "SETTINGS"]
+    menu_options = ["Press ENTER to start ", "SETTINGS","QUIT"]
     selected_option = 0
 
     # Positions 
     positions = [
         (WIDTH // 2, HEIGHT // 2 -40),  # Position pour "Play"
-        (WIDTH // 2, HEIGHT // 2 )   # Position pour "Settings"
+        (WIDTH // 2, HEIGHT // 2 ),   # Position pour "Settings"
+        (WIDTH // 2, HEIGHT // 2 +40)   # Position pour "Settings"
     ]
 
     clock = pygame.time.Clock()
@@ -99,9 +99,12 @@ def main_menu(screen, fresque):
                     selected_option = (selected_option + 1) % len(menu_options)
                 elif event.key == pygame.K_RETURN:
                     if selected_option == 0:
+                        choose_map(screen)
                         return True  # Lancer le jeu
                     elif selected_option == 1:
                         settings_menu(screen)  # Ouvrir le menu de paramètres
+                    elif selected_option == 2:
+                        return False  # Ouvrir le menu de paramètres
 
         # Mettre à jour l'écran
         pygame.display.flip()
@@ -109,8 +112,14 @@ def main_menu(screen, fresque):
 
 def settings_menu(screen):
     """Affiche une fenêtre avec plusieurs onglets dans le menu des paramètres."""
-   
-
+    # Charger l'image de fond
+    try:
+        background = pygame.image.load("Projet-Python-/images/back.png")
+        background = pygame.transform.scale(background, (WIDTH, HEIGHT))  # Ajuste à la taille de l'écran
+    except pygame.error as e:
+        print(f"Erreur lors du chargement de l'image de fond : {e}")
+        return
+    
     # Texte pour les onglets
     tabs = ["But du Jeu", "Personnages", "Cases"]
     current_tab = 0
@@ -121,10 +130,9 @@ def settings_menu(screen):
         "Objectif :",
         "- Capturez le drapeau ennemi.",
         "- Défendez votre drapeau et gagnez des points.",
-        "- Trois façons de gagner :",
-        "   1. Capture du drapeau.",
+        "- Deux façons de gagner :",
+        "   1. Capture du drapeau avant la fin du temps impartie.",
         "   2. Points par éliminations.",
-        "   3. Domination de la grille.",
     ]
 
     characters = [
@@ -167,7 +175,7 @@ def settings_menu(screen):
 
     running = True
     while running:
-        screen.fill(BLACK)
+        screen.blit(background, (0, 0))
 
         # Dessiner les onglets
         for i, tab in enumerate(tabs):
@@ -178,10 +186,10 @@ def settings_menu(screen):
 
         # Afficher le contenu selon l'onglet sélectionné
         if current_tab == 0:  # Onglet "But du jeu"
-            y = 100
+            y = 150
             for line in game_goal_text:
                 text = small_font.render(line, True, WHITE)
-                screen.blit(text, (50, y))
+                screen.blit(text, (500, y))
                 y += 30
 
         elif current_tab == 1:  # Onglet "Personnages"
@@ -202,7 +210,7 @@ def settings_menu(screen):
                 screen.blit(char["loaded_image"], (x, y))
 
                 # Afficher le nom
-                text_name = font.render(char["name"], True, WHITE)
+                text_name = font.render(char["name"], True, BLACK)
                 screen.blit(text_name, (x+140, y ))  # Décalage sous l'image
                 
                 # Afficher les caractéristiques (description)
@@ -228,7 +236,7 @@ def settings_menu(screen):
                 # Afficher l'image
                 screen.blit(case["loaded_image"], (x, y))
                 # Afficher le nom et la description
-                text_name = font.render(case["name"], True, WHITE)
+                text_name = font.render(case["name"], True, BLACK)
                 text_desc = small_font.render(case["description"], True, WHITE)
                 screen.blit(text_name, (x, y + 110))  # Nom en dessous de l'image
                 screen.blit(text_desc, (x, y + 140))  # Description en dessous du nom
@@ -249,6 +257,75 @@ def settings_menu(screen):
         # Mettre à jour l'affichage
         pygame.display.flip()
 
+def choose_map(screen):
+    """Permet au joueur de choisir une carte avant de lancer le jeu."""
+    # Charger l'image de fond
+    try:
+        background = pygame.image.load("Projet-Python-/images/back.png")
+        background = pygame.transform.scale(background, (WIDTH, HEIGHT))  # Ajuste à la taille de l'écran
+    except pygame.error as e:
+        print(f"Erreur lors du chargement de l'image de fond : {e}")
+        return
+    
+    # Charger les images des cartes
+    maps = [
+        {"name": "Foret", "image": "Projet-Python-/images/fresque_1.png"},
+        {"name": "Desert", "image": "Projet-Python-/images/fresque_2.png"},
+        {"name": "Neige", "image": "Projet-Python-/images/fresque_3.png"},
+    ]
 
+    # Charger et redimensionner les images des cartes
+    for map_data in maps:
+        try:
+            map_data["img"] = pygame.image.load(map_data["image"])
+            map_data["img"] = pygame.transform.scale(map_data["img"], (300, 200))
+        except pygame.error as e:
+            print(f"Erreur lors du chargement de l'image pour la carte {map_data['name']}: {e}")
+            return None
+
+    # Positions pour afficher les cartes
+    positions = [
+        (WIDTH // 4 - 150, HEIGHT // 2 - 100),
+        (WIDTH // 2 - 150, HEIGHT // 2 - 100),
+        (3 * WIDTH // 4 - 150, HEIGHT // 2 - 100),
+    ]
+
+    # Police pour le texte
+    font = pygame.font.Font("Projet-Python-/images/GameBoy.ttf", 20)
+
+    # Curseur initial
+    selected_index = 0
+
+    running = True
+
+    while running:
+        # Fond d'écran noir
+        screen.blit(background, (0, 0))
+
+        # Afficher chaque carte et son nom
+        for i, map_data in enumerate(maps):
+            screen.blit(map_data["img"], positions[i])
+            # Couleur du texte : en surbrillance si sélectionnée
+            color = BLACK if i == selected_index else WHITE
+            text = font.render(map_data["name"], True, color)
+            text_rect = text.get_rect(center=(positions[i][0] + 150, positions[i][1] + 220))
+            screen.blit(text, text_rect)
+
+        # Gestion des événements
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:  # Déplacer le curseur à gauche
+                    selected_index = (selected_index - 1) % len(maps)
+                elif event.key == pygame.K_RIGHT:  # Déplacer le curseur à droite
+                    selected_index = (selected_index + 1) % len(maps)
+                elif event.key == pygame.K_RETURN:  # Lancer le jeu avec la carte sélectionnée
+                    return selected_index
+
+        # Mettre à jour l'affichage
+        pygame.display.flip()
+        
 if __name__ == "__main__":
     main()
