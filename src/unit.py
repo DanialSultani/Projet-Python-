@@ -88,6 +88,8 @@ class Unit:
         game : Game
             L'instance du jeu pour accéder aux cases et vérifier les déplacements autorisés.
         """
+        # Récupérer la case actuelle avant le déplacement
+        current_case = game.get_case_at(self.x, self.y)
         # Calcul des nouvelles coordonnées en fonction de la direction
         new_x, new_y = self.x, self.y
         if self.distance_remaining > 0:  # Vérifier s'il reste des déplacements
@@ -108,6 +110,16 @@ class Unit:
             self.has_moved = True  # Marquer l'unité comme ayant bougé
         else:
             print("Cette unité a épuisé ses déplacements.")
+            # Vérifier la traversabilité de la nouvelle case
+        target_case = game.get_case_at(new_x, new_y)
+        if target_case and target_case.effet.get("traversable", True):
+            # Réinitialiser les effets de la case actuelle
+            if current_case:
+                self.reset_effects()
+            # Appliquer les effets de la nouvelle case
+            target_case.appliquer_effet(self, game.screen)
+            # Mettre à jour la position de l'unité
+            self.x, self.y = new_x, new_y
 
         # Vérifie les limites de déplacement (distance autorisée)
         cases_autorisees = self.get_deplacement_autorise(game)
@@ -154,26 +166,49 @@ class Unit:
                         cases_accessibles.append((new_x, new_y))
         return cases_accessibles
 
+    def reset_effects(self):
+        """Réinitialise les effets temporaires de l'unité."""
+        self.invisible = False
+        self.invincible = False
+
+    def recevoir_dommage(self, montant):
+        """
+        Réduit les points de vie de l'unité sauf si elle est invincible.
+
+        :param montant: Nombre de points de dégâts infligés.
+        """
+        if self.invincible:
+            print(f"{self.name} est invincible et ne reçoit pas de dégâts.")
+            return
+        self.health = max(0, self.health - montant)
+        print(f"{self.name} reçoit {montant} de dégâts. Santé restante : {self.health}/{self.max_health}.")
+
 
     def draw(self, screen):
         """Affiche l'unité sur l'écran."""
 
         # Charger et redimensionner les sprites
         if self.name == 'soldat':
-            sprite = pygame.image.load("images/soldat.png")
+            sprite = pygame.image.load("Projet-Python-/images/soldat.png")
             sprite = pygame.transform.scale(sprite, (2*CELL_SIZE , 2*CELL_SIZE ))
         elif self.name == 'medecin':
-            sprite = pygame.image.load("images/medecin.png")
+            sprite = pygame.image.load("Projet-Python-/images/medecin.png")
             sprite = pygame.transform.scale(sprite, (2*CELL_SIZE, 2*CELL_SIZE))
         elif self.name == 'helico':
-            sprite = pygame.image.load("images/helico.png")
+            sprite = pygame.image.load("Projet-Python-/images/helico.png")
             sprite = pygame.transform.scale(sprite, (3 * (CELL_SIZE - 2), 3 * (CELL_SIZE - 2)))
         elif self.name == 'char':
-            sprite = pygame.image.load("images/char.png")
+            sprite = pygame.image.load("Projet-Python-/images/char.png")
             sprite = pygame.transform.scale(sprite, (3 * CELL_SIZE, 3 * CELL_SIZE))
         else:
             return  # Si aucun type ne correspond
-
+        
+        # Appliquer la transparence si l'unité est invisible
+        if self.invisible:
+            sprite.set_alpha(128)  # 128 = moitié transparent (valeurs de 0 à 255)
+        else:
+            sprite.set_alpha(255)  # 255 = opaque
+            
         # Dessiner le sprite
         screen.blit(sprite, (self.x * CELL_SIZE, self.y * CELL_SIZE))
 
@@ -216,10 +251,37 @@ class Unit:
         # Dessiner la barre de santé
         color = GREEN if self.team == "player1" else RED
         pygame.draw.rect(screen, color, (health_x, health_y, health_width, health_height), border_radius=borders)
+    # Liste pour les compétences attribuées
+        self.competences = []
 
-        if self.propriete == "oasis":
-        # Dessiner une aura de soin.
-            pygame.draw.circle(screen, (0, 255, 0), (self.x * CELL_SIZE, self.y * CELL_SIZE), 10)
-        elif self.propriete == "glace":
-        # Indiquer un ralentissement avec un effet de givre.
-            pygame.draw.circle(screen, (173, 216, 230), (self.x * CELL_SIZE, self.y * CELL_SIZE), 10)
+    def attribuer_competences(self, gestion_competences):
+        """
+        Attribue des compétences à l'unité en fonction de son type (name).
+
+        :param gestion_competences: Instance de GestionCompetences
+        """
+        if self.name == 'soldat':
+            # Soldat reçoit Arme à feu
+            self.competences.append(gestion_competences.get_competence("Arme à feu"))
+
+        elif self.name == 'medecin':
+            # Médecin reçoit Soin et Arme à feu
+            self.competences.append(gestion_competences.get_competence("Soin"))
+            self.competences.append(gestion_competences.get_competence("Arme à feu"))
+
+        elif self.name == 'helico':
+            # Hélico reçoit Grenade
+            self.competences.append(gestion_competences.get_competence("Grenade"))
+
+        elif self.name == 'char':
+            # Char reçoit Grenade et Bouclier
+            self.competences.append(gestion_competences.get_competence("Grenade"))
+            self.competences.append(gestion_competences.get_competence("Bouclier"))
+
+    def afficher_competences(self):
+        """
+        Affiche les compétences de l'unité.
+        """
+        print(f"Compétences de {self.name} ({self.team}):")
+        for competence in self.competences:
+            print(f"- {competence.nom} (Type: {competence.type_competence})")

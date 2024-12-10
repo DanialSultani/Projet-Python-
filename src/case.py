@@ -72,25 +72,26 @@ class Case :
             "mur": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "arbre": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "roche": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "dune": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
 
             # Terrains traversables
             "herbe": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
-            "sable": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -1},
-            "neige": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -1},
-            "glace": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -2},
+            "sable": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "neige": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "glace": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -1},
 
             # Terrains spéciaux
-            "oasis": {"traversable": True, "bloque_balle": False, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 1},
+            "oasis": {"traversable": True, "bloque_balle": False, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "buisson": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": True, "invincible": True, "boost_vitesse": 0},
-            "eau": {"traversable": False, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -1},
+            "eau": {"traversable": False, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
 
             # Structures
             "pont": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "tente": {"traversable": False, "bloque_balle": True, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 0},
 
             # Objets interactifs
-            "chameau": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 2},
-            "feu": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "chameau": {"traversable": True, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 1},
+            "bonhomme_neige": {"traversable": True, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 1},
 
             # Zones stratégiques
             "flag1": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
@@ -98,40 +99,63 @@ class Case :
 
             # Zones bonus/malus
             "puit": {"traversable": False, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -2},
-            "montagne": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
-            "lava": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -5},
-        }
+            "oasis": {"traversable": True, "bloque_balle": False, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 0},
 
-        # Si la propriété n'est pas définie, retour par défaut
+            # Terrain inconnu
+            "terrain_inconnu": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+        }
         return effets.get(propriete, {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0})
 
-    def appliquer_effets_case(self, case, screen):
+    def appliquer_effet(self, unite, screen):
         """
-        Applique les effets de la case actuelle à l'unité.
+        Applique l'effet de la case à une unité (soins, invisibilité, invincibilité, etc.).
 
-        Parameters:
+        Paramètres
         ----------
-        case : Case
-            La case sur laquelle l'unité se trouve.
+        unite : Unit
+            L'unité affectée par l'effet.
         screen : pygame.Surface
-            L'écran pour afficher les effets visuels ou les messages.
+            L'écran de jeu pour afficher des messages ou des effets.
         """
-        if case.effet["soigne"]:
-            self.health = min(self.max_health, self.health + 2)
-            print(f"{self.name} soigné à {self.health}/{self.max_health} points de vie.")
-        if case.effet["boost_vitesse"] != 0:
-            self.distance_remaining += case.effet["boost_vitesse"]
-            print(f"Vitesse temporaire augmentée pour {self.name}. Distance restante : {self.distance_remaining}.")
-        if case.effet["invisible"]:
-            print(f"{self.name} devient invisible !")
-        if case.effet["invincible"]:
-            print(f"{self.name} devient invincible temporairement.")
+        if not self.effet["traversable"]:
+            raise ValueError("Cette case ne peut pas être traversée !")
 
-        # Vérification de victoire
+        # Effets de soin
+        if self.effet.get("soigne"):
+            unite.vie = min(unite.vie_max, unite.vie + 2)  # Soigne sans dépasser le maximum
+            print(f"{unite.name} a été soigné à {unite.vie}/{unite.vie_max} points de vie.")
+
+        # Effets de vitesse (positifs et négatifs)
+        if self.effet.get("boost_vitesse") != 0:
+            unite.vitesse += self.effet["boost_vitesse"]
+            print(f"Vitesse de {unite.name} modifiée : {unite.vitesse}")
+
+        # Effets d'état (invisibilité, invincibilité)
+        if self.effet.get("invisible"):
+            unite.invisible = True
+            print(f"{unite.name} est maintenant invisible.")
+        else:
+            unite.invisible = False
+
+        if self.effet.get("invincible"):
+            unite.invincible = True
+            print(f"{unite.name} est maintenant invincible.")
+        else:
+            unite.invincible = False
+
+        # Effets de dégât feu
+        if self.propriete == "feu":
+            unite.vie = max(0, unite.vie - 1)  # Inflige des dégâts
+            print(f"{unite.name} a subi des dégâts du feu. Vie restante : {unite.vie}/{unite.vie_max}.")
+        if self.propriete == "glace":
+            print(f"{unite.name} est ralenti par la glace.")
+
+        # Vérification de victoire (drapeaux)
         if self.propriete == "flag1" and unite.team == "enemy":
             show_victory_screen(screen, "enemy")
         elif self.propriete == "flag2" and unite.team == "player":
             show_victory_screen(screen, "player")
+
 
     def bloque_balle(self):
         """
@@ -148,7 +172,7 @@ class Case :
         
         # Afficher du drapeau du joueur 1 
         if self.propriete == 'flag1':
-            flag_player1 = pygame.image.load("images/flag1.png")
+            flag_player1 = pygame.image.load("Projet-Python-/images/flag1.png")
             flag_player1 = pygame.transform.scale(flag_player1,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(flag_player1, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -156,7 +180,7 @@ class Case :
 
         # Afficher du drapeau du joueur 2 
         elif self.propriete == 'flag2':
-            flag_player2 = pygame.image.load("images/flag2.png")
+            flag_player2 = pygame.image.load("Projet-Python-/images/flag2.png")
             flag_player2 = pygame.transform.scale(flag_player2,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(flag_player2, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -165,7 +189,7 @@ class Case :
         # Map foret
         # Afficher les murs
         elif self.propriete == 'mur':
-            mur = pygame.image.load("images/mur.png")
+            mur = pygame.image.load("Projet-Python-/images/mur.png")
             mur = pygame.transform.scale(mur,  (CELL_SIZE, CELL_SIZE))  
             screen.blit(mur, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -173,7 +197,7 @@ class Case :
 
         # Afficher les tronc
         elif self.propriete == 'tronc':
-            tronc = pygame.image.load("images/tronc.png")
+            tronc = pygame.image.load("Projet-Python-/images/tronc.png")
             tronc = pygame.transform.scale(tronc,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(tronc, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -181,7 +205,7 @@ class Case :
 
         # Afficher les buisson
         elif self.propriete == 'buisson':
-            buisson = pygame.image.load("images/buisson.png")
+            buisson = pygame.image.load("Projet-Python-/images/buisson.png")
             buisson = pygame.transform.scale(buisson,  (5*CELL_SIZE, 3*CELL_SIZE))  
             screen.blit(buisson, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -189,7 +213,7 @@ class Case :
 
         # Afficher les arbres
         elif self.propriete == 'arbre':
-            arbre = pygame.image.load("images/arbre.png")
+            arbre = pygame.image.load("Projet-Python-/images/arbre.png")
             arbre = pygame.transform.scale(arbre,  (3*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(arbre, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -197,7 +221,7 @@ class Case :
 
         # Afficher la boue
         elif self.propriete == 'boue':
-            boue = pygame.image.load("images/boue.png")
+            boue = pygame.image.load("Projet-Python-/images/boue.png")
             boue = pygame.transform.scale(boue,  (8*CELL_SIZE, 5*CELL_SIZE))  
             screen.blit(boue, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -205,7 +229,7 @@ class Case :
 
         # Afficher la montagne
         elif self.propriete == 'brin':
-            brin = pygame.image.load("images/brin.png")
+            brin = pygame.image.load("Projet-Python-/images/brin.png")
             brin= pygame.transform.scale(brin,  (CELL_SIZE, CELL_SIZE))  
             screen.blit(brin, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -213,7 +237,7 @@ class Case :
 
         # Afficher le puit
         elif self.propriete == 'puit':
-            puit = pygame.image.load("images/puit.png")
+            puit = pygame.image.load("Projet-Python-/images/puit.png")
             puit= pygame.transform.scale(puit,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(puit, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -222,7 +246,7 @@ class Case :
         # Map desert
         # Afficher les chameaux
         elif self.propriete == 'chameau':
-            chameau = pygame.image.load("images/chameau.png")
+            chameau = pygame.image.load("Projet-Python-/images/chameau.png")
             chameau = pygame.transform.scale(chameau,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(chameau, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -230,23 +254,23 @@ class Case :
 
         # Afficher les dunes
         elif self.propriete == 'dune2':
-            dune = pygame.image.load("images/dune2.png")
-            dune = pygame.transform.scale(dune,  (3*CELL_SIZE, 2*CELL_SIZE))  
+            dune = pygame.image.load("Projet-Python-/images/dune2.png")
+            dune = pygame.transform.scale(dune,  (3*CELL_SIZE, 3*CELL_SIZE))  
             screen.blit(dune, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
             pygame.display.flip()
 
         elif self.propriete == 'tente':
-            tente = pygame.image.load("images/tente.png")
-            tente = pygame.transform.scale(tente,  (6*CELL_SIZE, 3*CELL_SIZE))  
+            tente = pygame.image.load("Projet-Python-/images/tente.png")
+            tente = pygame.transform.scale(tente,  (4*CELL_SIZE, 2.5*CELL_SIZE))  
             screen.blit(tente, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
             pygame.display.flip()
 
         # Afficher les oasis
         elif self.propriete == 'oasis':
-            palmier = pygame.image.load("images/oasis.webp")
-            palmier = pygame.transform.scale(palmier,  (3*CELL_SIZE, 3*CELL_SIZE))  
+            palmier = pygame.image.load("Projet-Python-/images/oasis.webp")
+            palmier = pygame.transform.scale(palmier,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(palmier, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
             pygame.display.flip()
@@ -254,8 +278,8 @@ class Case :
         
         # Afficher les montagnes
         elif self.propriete == 'dune':
-            dune = pygame.image.load("images/dune.png")
-            dune = pygame.transform.scale(dune,  (5*CELL_SIZE, 3*CELL_SIZE))  
+            dune = pygame.image.load("Projet-Python-/images/dune.png")
+            dune = pygame.transform.scale(dune,  (4*CELL_SIZE, 3*CELL_SIZE))  
             screen.blit(dune, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
             pygame.display.flip()
@@ -264,14 +288,14 @@ class Case :
         # Map neige
         # Afficher les sapin
         elif self.propriete == 'sapin':
-            sapin = pygame.image.load("images/sapin.png")
+            sapin = pygame.image.load("Projet-Python-/images/sapin.png")
             sapin = pygame.transform.scale(sapin,  (3*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(sapin, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
             pygame.display.flip()
         # Afficher les bonhomme de neige 
         elif self.propriete == 'bonhomme':
-            bonhomme = pygame.image.load("images/bonhomme.png")
+            bonhomme = pygame.image.load("Projet-Python-/images/bonhomme.png")
             bonhomme = pygame.transform.scale(bonhomme,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(bonhomme, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -279,8 +303,8 @@ class Case :
 
         # Afficher les feu
         elif self.propriete == 'feu':
-            feu = pygame.image.load("images/feu.png")
-            feu = pygame.transform.scale(feu,  (3*CELL_SIZE, 2*CELL_SIZE))  
+            feu = pygame.image.load("Projet-Python-/images/feu.png")
+            feu = pygame.transform.scale(feu,  (1.5*CELL_SIZE, 1.5*CELL_SIZE))  
             screen.blit(feu, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
             pygame.display.flip()
@@ -289,8 +313,8 @@ class Case :
 
         # Afficher les glacier
         elif self.propriete == 'glace':
-            glace = pygame.image.load("images/glace.png")
-            glace  = pygame.transform.scale(glace ,  (2*CELL_SIZE, 2*CELL_SIZE))  
+            glace = pygame.image.load("Projet-Python-/images/glace.jpg")
+            glace  = pygame.transform.scale(glace ,  (1*CELL_SIZE, 1*CELL_SIZE))  
             screen.blit(glace , (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
             pygame.display.flip()
@@ -298,7 +322,7 @@ class Case :
         
         # Afficher les montagnes
         elif self.propriete == 'montagne':
-            montagne = pygame.image.load("images/montagne.png")
+            montagne = pygame.image.load("Projet-Python-/images/montagne.png")
             montagne = pygame.transform.scale(montagne,  (5*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(montagne, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
