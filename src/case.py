@@ -149,7 +149,7 @@ class Case :
         
         # Afficher du drapeau du joueur 1 
         if self.propriete == 'flag1':
-            flag_player1 = pygame.image.load("Projet-Python-/images/flag1.png")
+            flag_player1 = pygame.image.load("images/flag1.png")
             flag_player1 = pygame.transform.scale(flag_player1,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(flag_player1, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -157,7 +157,7 @@ class Case :
 
         # Afficher du drapeau du joueur 2 
         elif self.propriete == 'flag2':
-            flag_player2 = pygame.image.load("Projet-Python-/images/flag2.png")
+            flag_player2 = pygame.image.load("images/flag2.png")
             flag_player2 = pygame.transform.scale(flag_player2,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(flag_player2, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -166,7 +166,7 @@ class Case :
         # Map foret
         # Afficher les murs
         elif self.propriete == 'mur':
-            mur = pygame.image.load("Projet-Python-/images/mur.png")
+            mur = pygame.image.load("images/mur.png")
             mur = pygame.transform.scale(mur,  (CELL_SIZE, CELL_SIZE))  
             screen.blit(mur, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -174,7 +174,7 @@ class Case :
 
         # Afficher les tronc
         elif self.propriete == 'tronc':
-            tronc = pygame.image.load("Projet-Python-/images/tronc.png")
+            tronc = pygame.image.load("images/tronc.png")
             tronc = pygame.transform.scale(tronc,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(tronc, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -182,7 +182,7 @@ class Case :
 
         # Afficher les buisson
         elif self.propriete == 'buisson':
-            buisson = pygame.image.load("Projet-Python-/images/buisson.png")
+            buisson = pygame.image.load("images/buisson.png")
             buisson = pygame.transform.scale(buisson,  (5*CELL_SIZE, 3*CELL_SIZE))  
             screen.blit(buisson, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -190,7 +190,7 @@ class Case :
 
         # Afficher les arbres
         elif self.propriete == 'arbre':
-            arbre = pygame.image.load("Projet-Python-/images/arbre.png")
+            arbre = pygame.image.load("images/arbre.png")
             arbre = pygame.transform.scale(arbre,  (3*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(arbre, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -198,7 +198,7 @@ class Case :
 
         # Afficher la boue
         elif self.propriete == 'boue':
-            boue = pygame.image.load("Projet-Python-/images/boue.png")
+            boue = pygame.image.load("images/boue.png")
             boue = pygame.transform.scale(boue,  (8*CELL_SIZE, 5*CELL_SIZE))  
             screen.blit(boue, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -206,7 +206,7 @@ class Case :
 
         # Afficher la montagne
         elif self.propriete == 'brin':
-            brin = pygame.image.load("Projet-Python-/images/brin.png")
+            brin = pygame.image.load("images/brin.png")
             brin= pygame.transform.scale(brin,  (CELL_SIZE, CELL_SIZE))  
             screen.blit(brin, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -214,7 +214,7 @@ class Case :
 
         # Afficher le puit
         elif self.propriete == 'puit':
-            puit = pygame.image.load("Projet-Python-/images/puit.png")
+            puit = pygame.image.load("images/puit.png")
             puit= pygame.transform.scale(puit,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(puit, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -223,7 +223,7 @@ class Case :
         # Map desert
         # Afficher les chameaux
         elif self.propriete == 'chameau':
-            chameau = pygame.image.load("Projet-Python-/images/chameau.png")
+            chameau = pygame.image.load("images/chameau.png")
             chameau = pygame.transform.scale(chameau,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(chameau, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -231,14 +231,14 @@ class Case :
 
         # Afficher les dunes
         elif self.propriete == 'dune2':
-            dune = pygame.image.load("Projet-Python-/images/dune2.png")
+            dune = pygame.image.load("images/dune2.png")
             dune = pygame.transform.scale(dune,  (3*CELL_SIZE, 3*CELL_SIZE))  
             screen.blit(dune, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
             pygame.display.flip()
 
         elif self.propriete == 'tente':
-            tente = pygame.image.load("Projet-Python-/images/tente.png")
+            tente = pygame.image.load("images/tente.png")
             tente = pygame.transform.scale(tente,  (4*CELL_SIZE, 2.5*CELL_SIZE))  
             screen.blit(tente, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -246,7 +246,7 @@ class Case :
 
         # Afficher les oasis
         elif self.propriete == 'oasis':
-            palmier = pygame.image.load("Projet-Python-/images/oasis.webp")
+            palmier = pygame.image.load("images/oasis.webp")
             palmier = pygame.transform.scale(palmier,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(palmier, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -255,7 +255,7 @@ class Case :
         
         # Afficher les montagnes
         elif self.propriete == 'dune':
-            dune = pygame.image.load("Projet-Python-/images/dune.png")
+            dune = pygame.image.load("images/dune.png")
             dune = pygame.transform.scale(dune,  (4*CELL_SIZE, 3*CELL_SIZE))  
             screen.blit(dune, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -265,14 +265,14 @@ class Case :
         # Map neige
         # Afficher les sapin
         elif self.propriete == 'sapin':
-            sapin = pygame.image.load("Projet-Python-/images/sapin.png")
+            sapin = pygame.image.load("images/sapin.png")
             sapin = pygame.transform.scale(sapin,  (3*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(sapin, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
             pygame.display.flip()
         # Afficher les bonhomme de neige 
         elif self.propriete == 'bonhomme':
-            bonhomme = pygame.image.load("Projet-Python-/images/bonhomme.png")
+            bonhomme = pygame.image.load("images/bonhomme.png")
             bonhomme = pygame.transform.scale(bonhomme,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(bonhomme, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -280,7 +280,7 @@ class Case :
 
         # Afficher les feu
         elif self.propriete == 'feu':
-            feu = pygame.image.load("Projet-Python-/images/feu.png")
+            feu = pygame.image.load("images/feu.png")
             feu = pygame.transform.scale(feu,  (1.5*CELL_SIZE, 1.5*CELL_SIZE))  
             screen.blit(feu, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -290,7 +290,7 @@ class Case :
 
         # Afficher les glacier
         elif self.propriete == 'glace':
-            glace = pygame.image.load("Projet-Python-/images/glace.jpg")
+            glace = pygame.image.load("images/glace.jpg")
             glace  = pygame.transform.scale(glace ,  (1*CELL_SIZE, 1*CELL_SIZE))  
             screen.blit(glace , (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
@@ -299,7 +299,7 @@ class Case :
         
         # Afficher les montagnes
         elif self.propriete == 'montagne':
-            montagne = pygame.image.load("Projet-Python-/images/montagne.png")
+            montagne = pygame.image.load("images/montagne.png")
             montagne = pygame.transform.scale(montagne,  (5*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(montagne, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))

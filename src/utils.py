@@ -9,7 +9,7 @@ GRAY = (50, 50, 50)
 WIDTH = 1400
 HEIGHT = 800
 
-FPS = 30
+FPS = 60
 
 def show_victory_screen(screen, winner):
     """

@@ -2,7 +2,7 @@ import pygame
 from random import *
 from unit import *
 from case import *
-from interface import *
+from interface import * 
 
 
 def main():
@@ -16,9 +16,9 @@ def main():
     # Charger les fresques
     try:
         fresque = [
-            pygame.image.load("Projet-Python-/images/fresque_1.png"),
-            pygame.image.load("Projet-Python-/images/fresque_2.png"),
-            pygame.image.load("Projet-Python-/images/fresque_3.png"),
+            pygame.image.load("images/fresque_1.png"),
+            pygame.image.load("images/fresque_2.png"),
+            pygame.image.load("images/fresque_3.png"),
         ]
         fresque = [
             pygame.transform.scale(f, (int( WIDTH), HEIGHT))
@@ -49,7 +49,7 @@ def main():
 def main_menu(screen, fresque):
     """Affiche le menu principal avec les fresques comme fond."""
     # Ppolices
-    font = pygame.font.Font("Projet-Python-/images/GameBoy.ttf", 15)
+    font = pygame.font.Font("images/GameBoy.ttf", 15)
 
     # Textes du menu
     menu_options = ["Press ENTER to start ", "SETTINGS","QUIT"]
@@ -114,7 +114,7 @@ def settings_menu(screen):
     """Affiche une fenêtre avec plusieurs onglets dans le menu des paramètres."""
     # Charger l'image de fond
     try:
-        background = pygame.image.load("Projet-Python-/images/back.png")
+        background = pygame.image.load("images/back.png")
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))  # Ajuste à la taille de l'écran
     except pygame.error as e:
         print(f"Erreur lors du chargement de l'image de fond : {e}")
@@ -136,19 +136,19 @@ def settings_menu(screen):
     ]
 
     characters = [
-        {"name": "Soldat", "image": "Projet-Python-/images/soldat.png", "description": "Vie: 6 \n Vitesse: 2 \n Pouvoir: Attaque infligeant 1 point de vie dans 8 cases.\n Rapide et resistant "},
-        {"name": "Medecin", "image": "Projet-Python-/images/medecin.png", "description": "Vie: 1 \n Vitesse: 3 \n Pouvoir: guérison de 2 points de vie dans 8 cases. \n Rapide et agile, mais fragile."},
-        {"name": "Helicoptere ", "image": "Projet-Python-/images/helico.png", "description": "Vie: 2 \n Vitesse: 4 \n Pouvoir: Attaque infligeant des dégâts de 3 points dans 3 cases.\n Lent mais avec plus de vie."},
-        {"name": "Tank", "image": "Projet-Python-/images/char.png", "description": "Vie: 6 \n Vitesse: 1 \n Pouvoir: Attaque infligeant des dégâts de 3 points de vie dans 2 cases.\n Lent mais avec plus de vie."},
+        {"name": "Soldat", "image": "images/soldat.png", "description": "Vie: 6 \n Vitesse: 2 \n Pouvoir: Attaque infligeant 1 point de vie dans 8 cases.\n Rapide et resistant "},
+        {"name": "Medecin", "image": "images/medecin.png", "description": "Vie: 1 \n Vitesse: 3 \n Pouvoir: guérison de 2 points de vie dans 8 cases. \n Rapide et agile, mais fragile."},
+        {"name": "Helicoptere ", "image": "images/helico.png", "description": "Vie: 2 \n Vitesse: 4 \n Pouvoir: Attaque infligeant des dégâts de 3 points dans 3 cases.\n Lent mais avec plus de vie."},
+        {"name": "Tank", "image": "images/char.png", "description": "Vie: 6 \n Vitesse: 1 \n Pouvoir: Attaque infligeant des dégâts de 3 points de vie dans 2 cases.\n Lent mais avec plus de vie."},
 
         
     ]
 
     cases = [
-        {"name": "Arbre", "image": "Projet-Python-/images/arbre.png", "description": "Rapide et agile, mais fragile."},
-        {"name": "buisson", "image": "Projet-Python-/images/buisson.png", "description": "Rapide et agile, mais fragile."},
-        {"name": "oasis ", "image": "Projet-Python-/images/oasis.webp", "description": "Lent mais avec plus de vie."},
-        {"name": "Bonhomme de neige", "image": "Projet-Python-/images/bonhomme.png", "description": "Rapide et agile, mais fragile."},
+        {"name": "Arbre", "image": "images/arbre.png", "description": "Rapide et agile, mais fragile."},
+        {"name": "buisson", "image": "images/buisson.png", "description": "Rapide et agile, mais fragile."},
+        {"name": "oasis ", "image": "images/oasis.webp", "description": "Lent mais avec plus de vie."},
+        {"name": "Bonhomme de neige", "image": "images/bonhomme.png", "description": "Rapide et agile, mais fragile."},
 
     ]
 
@@ -170,7 +170,7 @@ def settings_menu(screen):
         return
 
     # Police
-    font = pygame.font.Font("Projet-Python-/images/GameBoy.ttf", 20)
+    font = pygame.font.Font("images/GameBoy.ttf", 20)
     small_font = pygame.font.SysFont("Times New Roman", 20)
 
     running = True
@@ -261,7 +261,7 @@ def choose_map(screen):
     """Permet au joueur de choisir une carte avant de lancer le jeu."""
     # Charger l'image de fond
     try:
-        background = pygame.image.load("Projet-Python-/images/back.png")
+        background = pygame.image.load("images/back.png")
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))  # Ajuste à la taille de l'écran
     except pygame.error as e:
         print(f"Erreur lors du chargement de l'image de fond : {e}")
@@ -269,9 +269,9 @@ def choose_map(screen):
     
     # Charger les images des cartes
     maps = [
-        {"name": "Foret", "image": "Projet-Python-/images/fresque_1.png"},
-        {"name": "Desert", "image": "Projet-Python-/images/fresque_2.png"},
-        {"name": "Neige", "image": "Projet-Python-/images/fresque_3.png"},
+        {"name": "Foret", "image": "images/fresque_1.png"},
+        {"name": "Desert", "image": "images/fresque_2.png"},
+        {"name": "Neige", "image": "images/fresque_3.png"},
     ]
 
     # Charger et redimensionner les images des cartes
@@ -291,7 +291,7 @@ def choose_map(screen):
     ]
 
     # Police pour le texte
-    font = pygame.font.Font("Projet-Python-/images/GameBoy.ttf", 20)
+    font = pygame.font.Font("images/GameBoy.ttf", 20)
 
     # Curseur initial
     selected_index = 0

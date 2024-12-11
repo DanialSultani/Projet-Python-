@@ -49,20 +49,20 @@ class Game :
         
         self.screen = screen
 
-        self.player1_units = [Unit(2, 2,  'player1','soldat'),
-                             Unit(3, 1, 'player1','medecin'),
-                             Unit(0, 3, 'player1','helico'),
-                             Unit(0, 1, 'player1','char')]
+        self.player1_units = [Unit(2, 2,  'player1','soldat',2,10),
+                             Unit(3, 1, 'player1','medecin',2,10),
+                             Unit(0, 3, 'player1','helico',2,10),
+                             Unit(10, 10, 'player1','char',2,10)]
 
-        self.player2_units = [Unit(20, 12, 'player2','soldat'),
-                            Unit(22, 11, 'player2','medecin'),
-                            Unit(19, 14, 'player2','helico'),
-                            Unit(21, 12, 'player2','char')]
+        self.player2_units = [Unit(20, 12, 'player2','soldat',2,10),
+                            Unit(22, 11, 'player2','medecin',2,10),
+                            Unit(19, 14, 'player2','helico',2,10),
+                            Unit(11, 12, 'player2','char',2,10)]
         
         # Liste des maps avec un terrain spécifique  
         self.maps = [
             { # Map 1: Foret
-                "terrain": "Projet-Python-/images/terrain_herbe.png",  # Terrain de la map
+                "terrain": "images/terrain_herbe.png",  # Terrain de la map
                 "cases": [  # Cases spécifiques de la map
                     Case(22, 1, 'arbre'), Case(18, 1, 'arbre'), Case(13, 1, 'arbre'), Case(7, 2, 'arbre'),
                     Case(15, 2, 'tronc'), Case(20, 4, 'arbre'), Case(11, 1, 'tronc'), Case(17, 8, 'arbre'),
@@ -80,7 +80,7 @@ class Game :
                 ]
             },
             { # Map 2 : Desert
-                "terrain": "Projet-Python-/images/terrain_sables.png",
+                "terrain": "images/terrain_sables.png",
                 "cases": [
                     Case(0, 0, 'dune'), Case(3, 0, 'dune'), Case(6, 0, 'dune'), Case(9, 0, 'dune'),Case(12, 0, 'dune'),Case(15, 0, 'dune'),Case(17, 0, 'dune'),Case(20, 0, 'dune'),Case(23, 0, 'dune'),Case(25, 0, 'dune'),
                     Case(0, 1, 'flag1'), Case(22, 14, 'flag2'),
@@ -92,7 +92,7 @@ class Game :
             }
             ,
             { # Map 3 : Neige
-                "terrain": "Projet-Python-/images/terrain_neige.png",
+                "terrain": "images/terrain_neige.png",
                 "cases": [
                     Case(24, 0, 'montagne'), Case(21, 0, 'montagne'), Case(18, 0, 'montagne'), Case(15, 0, 'montagne'), Case(12, 0, 'montagne'),Case(9, 0, 'montagne'),Case(6, 0, 'montagne'),Case(3, 0, 'montagne'),Case(0, 0, 'montagne'),
                     Case(0, 1, 'flag1'), Case(22, 14, 'flag2'),
@@ -190,7 +190,7 @@ class Game :
 
         # Charger et Dessiner le ciel  (dans la surface de jeu)
         try:
-            ciel= pygame.image.load("Projet-Python-/images/ciel.jpg")
+            ciel= pygame.image.load("images/ciel.jpg")
             ciel= pygame.transform.scale(ciel, (2*CELL_SIZE, CELL_SIZE))  # Adapter la taille à une cellule
         except pygame.error as e:
             print(f"Erreur lors du chargement de l'image du terrain : {e}")
@@ -213,7 +213,7 @@ class Game :
         # Dessiner le panneau latéral (1/4 de la fenêtre) pour les options, pouvoirs, etc.
         sidebar_width = WIDTH - game_width  # 1/4 de la largeur
         sidebar_surface = pygame.Surface((sidebar_width, HEIGHT))
-        back_lat= pygame.image.load("Projet-Python-/images/back_lateral.png")
+        back_lat= pygame.image.load("images/back_lateral.png")
         back_lat= pygame.transform.scale(back_lat, (3*sidebar_width , HEIGHT))
         sidebar_surface.blit(back_lat,(-200, 0))  # Fond sombre pour le panneau
 
@@ -246,7 +246,7 @@ class Game :
         game_width = int(WIDTH * 0.85)  # 3/4 de la largeur
         sidebar_width = WIDTH - game_width  # 1/4 de la largeur
         sidebar_surface = pygame.Surface((sidebar_width, HEIGHT))
-        back_lat= pygame.image.load("Projet-Python-/images/back_lateral.png")
+        back_lat= pygame.image.load("images/back_lateral.png")
         back_lat= pygame.transform.scale(back_lat, (3*sidebar_width , HEIGHT))
         sidebar_surface.blit(back_lat,(-200, 0))  # Fond sombre pour le panneau
 
@@ -260,7 +260,7 @@ class Game :
         ]
 
         # Dessiner chaque ligne d'instruction
-        font = pygame.font.Font("Projet-Python-/images/GameBoy.ttf", 10)
+        font = pygame.font.Font("images/GameBoy.ttf", 10)
         y = 150
         for line in instructions:
                 text = font.render(line, True, WHITE)
@@ -334,16 +334,44 @@ class Game :
                             if len(unit.competences) >= 3:
                                 competence = unit.competences[2]
                                 self.utiliser_competence(unit, competence, player_units)
+                        # Gérer l'attaque
+                        #elif event.key == pygame.K_a:  # Touche A pour attaquer
+                         #   if selected_unit:
+                          #      # Récupérer les cibles potentielles (alliées et ennemies)
+                           #     toutes_unites = self.player1_units + self.player2_units
+                            #    selected_unit.attaquer(toutes_unites)
+                                
+                                 # Retirer les unités mortes immédiatement après une attaque
+                             #   self.player1_units = [unit for unit in self.player1_units if unit.health > 0]
+                              #  self.player2_units = [unit for unit in self.player2_units if unit.health > 0]
+                        # Option d'attaque avec 'a'
+                        if event.key == pygame.K_a:
+                            for enemy in self.player2_units if current_turn == 'player1' else self.player1_units:
+                                # Vérifie si l'ennemi est dans la portée d'attaque de l'unité sélectionnée
+                                distance = abs(selected_unit.x - enemy.x) + abs(selected_unit.y - enemy.y)
+                                if distance <= selected_unit.attack_range:
+                                    # L'unité attaque l'ennemi
+                                    selected_unit.attaquer(enemy)
+                                    print(f"{selected_unit.name} attaque {enemy.name} !")
 
+                                    # Si l'ennemi est éliminé
+                                    if enemy.health <= 0:
+                                        print(f"{enemy.name} est éliminé !")
+                                        if current_turn == 'player1':
+                                            self.player2_units.remove(enemy)
+                                        else:
+                                            self.player1_units.remove(enemy)
 
-                        # Met à jour l'affichage
-                        self.flip_display()
+                                    # Redessine immédiatement après la suppression
+                                    self.flip_display()
 
-                        # Fin du tour avec la touche ESPACE
-                        if event.key == pygame.K_SPACE:
-                            has_acted = True
-                            selected_unit.is_selected = False
-    
+                                    # Fin du tour après l'attaque
+                                    has_acted = True
+                                    selected_unit.is_selected = False
+                                    break
+                            else:
+                                print("Aucun ennemi à portée pour cette unité.")
+
     
     def utiliser_competence(self, unit, competence, player_units):
         """
@@ -374,10 +402,13 @@ class Game :
                     unit.reset_distance()
                 self.handle_unit_turn(self.player1_units, current_turn)
             else:
-                print("TTour du joueur 2.")
+                print("Tour du joueur 2.")
                 for unit in self.player2_units:
                     unit.reset_distance()
                 self.handle_unit_turn(self.player2_units, current_turn)
+                
+            self.player1_units = [unit for unit in self.player1_units if unit.health > 0]
+            self.player2_units = [unit for unit in self.player2_units if unit.health > 0]
 
             # Alterner les tours
             current_turn = 'player2' if current_turn == 'player1' else 'player1'

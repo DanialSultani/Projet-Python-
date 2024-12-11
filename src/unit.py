@@ -46,31 +46,41 @@ class Unit:
         Dessine l'unité sur la grille.
     """
 
-    def __init__(self, x, y, team, name):
+    def __init__(self, x, y, team, name,attack_power,health):
         self.x = x
         self.y = y
         self.team = team
         self.is_selected = False
         self.name = name 
-
+        self.health=health
+        self.max_health=health
+        self.attack_power=attack_power
+        self.distance_remaining = 0  # Distance que l'unité peut encore parcourir
         # Initialisation des capacités selon le type d'unité
         if self.name == 'soldat':
             self.max_distance = 2 # Distance maximale 
             self.health = 6
             self.max_health = 6
-
+            self.attack_range = 8
         elif self.name == 'medecin':
             self.max_distance = 2  # Distance de déplacement
             self.health = 2
             self.max_health = 2
+            self.heal_power = 2 
+            self.attack_range = 8
         elif self.name == 'helico':
             self.max_distance = 4  # Distance maximale (4 cases)
             self.health = 3
             self.max_health = 3
+            self.attack_power = 3  # Pouvoir d'attaque
+            self.attack_range = 3
+            
         elif self.name == 'char':
             self.max_distance = 10 # Distance maximale (2 cases)
             self.health = 6
             self.max_health =6
+            self.attack_power = 3  # Pouvoir d'attaque
+            self.attack_range = 2
 
     
     def reset_distance(self):
@@ -160,16 +170,16 @@ class Unit:
 
         # Charger et redimensionner les sprites
         if self.name == 'soldat':
-            sprite = pygame.image.load("Projet-Python-/images/soldat.png")
+            sprite = pygame.image.load("images/soldat.png")
             sprite = pygame.transform.scale(sprite, (2*CELL_SIZE , 2*CELL_SIZE ))
         elif self.name == 'medecin':
-            sprite = pygame.image.load("Projet-Python-/images/medecin.png")
+            sprite = pygame.image.load("images/medecin.png")
             sprite = pygame.transform.scale(sprite, (2*CELL_SIZE, 2*CELL_SIZE))
         elif self.name == 'helico':
-            sprite = pygame.image.load("Projet-Python-/images/helico.png")
+            sprite = pygame.image.load("images/helico.png")
             sprite = pygame.transform.scale(sprite, (3 * (CELL_SIZE - 2), 3 * (CELL_SIZE - 2)))
         elif self.name == 'char':
-            sprite = pygame.image.load("Projet-Python-/images/char.png")
+            sprite = pygame.image.load("images/char.png")
             sprite = pygame.transform.scale(sprite, (3 * CELL_SIZE, 3 * CELL_SIZE))
         else:
             return  # Si aucun type ne correspond
@@ -218,6 +228,20 @@ class Unit:
         pygame.draw.rect(screen, color, (health_x, health_y, health_width, health_height), border_radius=borders)
     # Liste pour les compétences attribuées
         self.competences = []
+    
+    def attaquer(self, target):
+        """Attaque une unité cible si elle est dans le rayon d'attaque."""
+        distance = abs(self.x - target.x) + abs(self.y - target.y)
+        if distance <= self.attack_range:
+            if hasattr(self, 'heal_power'):  # Si c'est un docteur, il soigne
+                target.health = min(target.max_health, target.health + self.heal_power)
+                print(f"{self.name} soigne {target.name} pour {self.heal_power} points de vie.")
+            else:  # Sinon, il attaque
+                target.health -= self.attack_power
+                print(f"{self.name} attaque {target.name} pour {self.attack_power} dégâts.")
+
+        else:
+            print("Cible hors de portée.")
 
     def attribuer_competences(self, gestion_competences):
         """
