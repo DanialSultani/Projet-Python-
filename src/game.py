@@ -1,3 +1,4 @@
+
 import pygame
 from random import *
 from unit import *
@@ -317,7 +318,7 @@ def choose_map(screen):
                 pygame.quit()
                 exit()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:  # Déplacer le curseur à gauche
+                if event.key == pygame.K_LEFT:  # Déplacer le czurseur à gauche
                     selected_index = (selected_index - 1) % len(maps)
                 elif event.key == pygame.K_RIGHT:  # Déplacer le curseur à droite
                     selected_index = (selected_index + 1) % len(maps)

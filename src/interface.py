@@ -345,6 +345,8 @@ class Game :
                              #   self.player1_units = [unit for unit in self.player1_units if unit.health > 0]
                               #  self.player2_units = [unit for unit in self.player2_units if unit.health > 0]
                         # Option d'attaque avec 'a'
+                        self.flip_display()
+                        
                         if event.key == pygame.K_a:
                             for enemy in self.player2_units if current_turn == 'player1' else self.player1_units:
                                 # Vérifie si l'ennemi est dans la portée d'attaque de l'unité sélectionnée
