@@ -1,8 +1,0 @@
-name: clash_of_frontlines_env
-channels:
-  - conda-forge
-dependencies:
-  - python
-  - pygame
-  - numpy
-  - pillow

@@ -1,157 +1,67 @@
 import pygame
+import random
 
 
-class Competence:
-    def __init__(self, nom, type_competence, puissance, portee, zone_effet=1, precision=100):
-        """
-            Attributs
-        ---------
-        nom : str
-            Nom de la compétence.
-        type_competence : str
-            Type de compétence (ex: "attaque", "soin", "defence")
-        puissance : int
-            Puissance de la compétence
-        portee : int
-            Portée maximale en cases
-        zone_effet : int
-            Taille de la zone d'effet
-        precision : int
-            Probabilité de succès de la compétence (en %, 100 par défaut)
-        
-        Méthodes
-        --------
-        utiliser(self, utilisateur, cibles, grille)
-            Utilise la compétence sur des cibles spécifiques.
-        _est_a_portee(self, utilisateur, cibles, grille) 
-            Vérifie si toutes les cibles sont à portée.
-        _touche(self)
-            Détermine si l'attaque touche la cible en fonction de la précision.
-        """
 
-        self.nom = nom
-        self.type_competence = type_competence
-        self.puissance = puissance
-        self.portee = portee
-        self.zone_effet = zone_effet
-        self.precision = precision
 
-    def utiliser(self, utilisateur, cibles):
-        """
-        Utilise la compétence sur des cibles spécifiques.
-        
-        :param utilisateur: Unité qui utilise la compétence (objet)
-        :param cibles: Liste des cibles affectées par la compétence (liste d'objets)
-        :param grille: Référence à la grille de jeu pour vérifier les portées/positions (objet Grille)
-        :return: Résultat de l'utilisation (str ou autre selon besoin)
-        """
-        if not self._est_a_portee(utilisateur, cibles):
-            return f"{self.nom} échoue : cible hors de portée."
+def handle_player_turn(self):
+    """Tour du joueur"""
+    for selected_unit in self.player_units:
 
-        if self.type_competence == "attaque":
-            for cible in cibles:
-                if self._touche():
-                    dommage = self.puissance
-                    cible.recevoir_dommage(dommage)
-                    print(f"{self.nom} inflige {dommage} à {cible.nom}.")
-                else:
-                    print(f"{self.nom} a raté {cible.nom}.")
+        # Tant que l'unité n'a pas terminé son tour
+        has_acted = False
+        selected_unit.is_selected = True
+        self.flip_display()
+        while not has_acted:
 
-        elif self.type_competence == "soin":
-            for cible in cibles:
-                soin = self.puissance
-                cible.recevoir_soin(soin)
-                print(f"{self.nom} soigne {soin} points de vie à {cible.nom}.")
+        # Important: cette boucle permet de gérer les événements Pygame
+            for event in pygame.event.get():
 
-        
+                # Gestion de la fermeture de la fenêtre
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
 
-        return f"{self.nom} utilisée avec succès."
+                # Gestion des touches du clavier
+                if event.type == pygame.KEYDOWN:
 
-    def _est_a_portee(self, utilisateur, cibles, grille):
-        """
-        Vérifie si toutes les cibles sont à portée.
-        
-        :param utilisateur: L'unité utilisant la compétence
-        :param cibles: Liste des cibles
-        :param grille: Grille de jeu pour vérifier les distances
-        :return: True si les cibles sont à portée, False sinon
-        """
-        for cible in cibles:
-            distance = grille.calculer_distance(utilisateur.position, cible.position)
-            if distance > self.portee:
-                return False
-        return True
+                    # Déplacement (touches fléchées)
+                    dx, dy = 0, 0
+                    if event.key == pygame.K_LEFT:
+                        dx = -1
+                    elif event.key == pygame.K_RIGHT:
+                        dx = 1
+                    elif event.key == pygame.K_UP:
+                            dy = -1
+                    elif event.key == pygame.K_DOWN:
+                            dy = 1
 
-    def _touche(self):
-        """
-        Détermine si l'attaque touche la cible en fonction de la précision.
-        :return: True si l'attaque touche, False sinon
-        """
-        import random
-        return random.randint(1, 100) <= self.precision
-    
-class GestionCompetences:
-    def __init__(self):
-        # Initialisation du dictionnaire des compétences
-        self.competences = {}
+                    selected_unit.move(dx, dy)
+                    self.flip_display()
 
-    def ajouter_competence(self, competence):
-        """
-        Ajoute une compétence au dictionnaire avec son nom comme clé.
-        """
-        self.competences[competence.nom] = competence
+                    # Attaque (touche espace) met fin au tour
+                    if event.key == pygame.K_SPACE:
+                        for enemy in self.enemy_units:
+                            if abs(selected_unit.x - enemy.x) <= 1 and abs(selected_unit.y - enemy.y) <= 1:
+                                selected_unit.attack(enemy)
+                                if enemy.health <= 0:
+                                    self.enemy_units.remove(enemy)
 
-    def get_competence(self, nom):
-        """
-        Récupère une compétence par son nom.
-        """
-        return self.competences.get(nom)
+                        has_acted = True
+                        selected_unit.is_selected = False
 
-# Création de la gestion des compétences
-gestion_competences = GestionCompetences()
+def handle_enemy_turn(self):
+    """IA très simple pour les ennemis."""
+    for enemy in self.enemy_units:
 
-# Création des compétences (comme dans les exemples précédents)
-arme_a_feu = Competence(
-    nom="Arme à feu",
-    type_competence="attaque",
-    puissance=40,
-    portee=5,
-    zone_effet=1,
-    precision=85
-)
+        # Déplacement aléatoire
+        target = random.choice(self.player_units)
+        dx = 1 if enemy.x < target.x else -1 if enemy.x > target.x else 0
+        dy = 1 if enemy.y < target.y else -1 if enemy.y > target.y else 0
+        enemy.move(dx, dy)
 
-soin = Competence(
-    nom="Soin",
-    type_competence="soin",
-    puissance=30,
-    portee=3,
-    zone_effet=3,
-    precision=100
-)
-
-grenade = Competence(
-    nom="Grenade",
-    type_competence="attaque",
-    puissance=50,
-    portee=6,
-    zone_effet=2,
-    precision=75
-)
-
-bouclier = Competence(
-    nom="Bouclier",
-    type_competence="effet",
-    puissance=0,
-    portee=1,
-    zone_effet=1,
-    precision=100,
-    effet_special=lambda utilisateur, cibles, grille: [
-        setattr(cible, "defense", cible.defense + 20) for cible in cibles
-    ]
-)
-
-# Ajout des compétences dans le gestionnaire
-gestion_competences.ajouter_competence(arme_a_feu)
-gestion_competences.ajouter_competence(soin)
-gestion_competences.ajouter_competence(grenade)
-gestion_competences.ajouter_competence(bouclier)
+        # Attaque si possible
+        if abs(enemy.x - target.x) <= 1 and abs(enemy.y - target.y) <= 1:
+            enemy.attack(target)
+            if target.health <= 0:
+                self.player_units.remove(target)

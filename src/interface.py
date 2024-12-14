@@ -37,7 +37,7 @@ class Game :
         La liste des unités de l'adversaire.
     """
 
-    def __init__(self, screen):
+    def __init__(self, screen, selected_map_index):
         """
         Construit le jeu avec la surface de la fenêtre.
 
@@ -49,20 +49,23 @@ class Game :
         
         self.screen = screen
 
-        self.player1_units = [Unit(2, 2,  'player1','soldat'),
-                             Unit(3, 1, 'player1','medecin'),
-                             Unit(0, 3, 'player1','helico'),
-                             Unit(0, 1, 'player1','char')]
+        self.player1_units = [Unit(2, 2,  'player1','soldat',2,10),
+                             Unit(3, 1, 'player1','medecin',2,10),
+                             Unit(0, 3, 'player1','helico',2,10),
+                             Unit(10, 10, 'player1','char',2,10)]
 
-        self.player2_units = [Unit(20, 12, 'player2','soldat'),
-                            Unit(22, 11, 'player2','medecin'),
-                            Unit(19, 14, 'player2','helico'),
-                            Unit(21, 12, 'player2','char')]
+        self.player2_units = [Unit(20, 12, 'player2','soldat',2,10),
+                            Unit(22, 11, 'player2','medecin',2,10),
+                            Unit(19, 14, 'player2','helico',2,10),
+                            Unit(11, 12, 'player2','char',2,10)]
+        
+        self.start_time = pygame.time.get_ticks()  # Enregistre le temps de départ
+        self.time_limit = 300000  # Par exemple, 5 minutes = 300000 ms (5 * 60 * 1000)
         
         # Liste des maps avec un terrain spécifique  
         self.maps = [
             { # Map 1: Foret
-                "terrain": "Projet-Python-/images/terrain_herbe.png",  # Terrain de la map
+                "terrain": "images/terrain_herbe.png",  # Terrain de la map
                 "cases": [  # Cases spécifiques de la map
                     Case(22, 1, 'arbre'), Case(18, 1, 'arbre'), Case(13, 1, 'arbre'), Case(7, 2, 'arbre'),
                     Case(15, 2, 'tronc'), Case(20, 4, 'arbre'), Case(11, 1, 'tronc'), Case(17, 8, 'arbre'),
@@ -80,7 +83,7 @@ class Game :
                 ]
             },
             { # Map 2 : Desert
-                "terrain": "Projet-Python-/images/terrain_sables.png",
+                "terrain": "images/terrain_sables.png",
                 "cases": [
                     Case(0, 0, 'dune'), Case(3, 0, 'dune'), Case(6, 0, 'dune'), Case(9, 0, 'dune'),Case(12, 0, 'dune'),Case(15, 0, 'dune'),Case(17, 0, 'dune'),Case(20, 0, 'dune'),Case(23, 0, 'dune'),Case(25, 0, 'dune'),
                     Case(0, 1, 'flag1'), Case(22, 14, 'flag2'),
@@ -92,7 +95,7 @@ class Game :
             }
             ,
             { # Map 3 : Neige
-                "terrain": "Projet-Python-/images/terrain_neige.png",
+                "terrain": "images/terrain_neige.png",
                 "cases": [
                     Case(24, 0, 'montagne'), Case(21, 0, 'montagne'), Case(18, 0, 'montagne'), Case(15, 0, 'montagne'), Case(12, 0, 'montagne'),Case(9, 0, 'montagne'),Case(6, 0, 'montagne'),Case(3, 0, 'montagne'),Case(0, 0, 'montagne'),
                     Case(0, 1, 'flag1'), Case(22, 14, 'flag2'),
@@ -108,49 +111,70 @@ class Game :
             }
         ]
 
-        # Sélection d'une map aléatoire
-        self.current_map = self.maps[choose_map(screen)]
+        # Configure la carte sélectionnée
+        self.current_map = self.maps[selected_map_index]
+        self.initialiser_grille()
 
         # Initialisation de la grille avec toutes les cases traversables
         self.initialiser_grille()
-
-        self.start_time = pygame.time.get_ticks()  # Temps initial du jeu
-        self.time_limit = 3 * 60 * 1000  # 3 minutes en millisecondes
+        self.verifier_grille()
 
     def initialiser_grille(self):
         """
-        Initialise la grille avec toutes les cases traversables par défaut,
-        sauf celles occupées par des objets environnementaux.
+        Initialise la grille comme une matrice 2D où chaque cellule représente une case.
         """
-        traversable_cases = []
-        # Parcourt toutes les positions de la grille
-        for x in range(WIDTH):
-            for y in range(HEIGHT):
-                # Vérifie si une case environnementale existe déjà ici
-                existing_case = self.get_case_at(x, y)
+        # Création d'une grille vide de dimensions WIDTH x HEIGHT
+        self.grille = [[None for _ in range(WIDTH // CELL_SIZE)] for _ in range(HEIGHT // CELL_SIZE)]
+
+        # Parcourir toutes les positions de la grille
+        for x in range(WIDTH // CELL_SIZE):
+            for y in range(HEIGHT // CELL_SIZE):
+                # Vérifie si une case spécifique existe à cette position
+                existing_case = next((case for case in self.current_map["cases"] if case.x == x and case.y == y), None)
                 if existing_case:
-                    # Si une case environnementale existe, on conserve sa propriété
-                    traversable_cases.append(existing_case)
+                    self.grille[y][x] = existing_case  # Ajoute la case existante
                 else:
-                    # Ajoute une case traversable par défaut
-                    traversable_cases.append(Case(x, y, "herbe"))
+                    # Ajoute une case par défaut (herbe) si aucune case spécifique n'est trouvée
+                    self.grille[y][x] = Case(x, y, "herbe")
 
-        # Remplace les cases actuelles par celles nouvellement générées
-        self.current_map["cases"] = traversable_cases
-
-    def get_time_remaining(self):
-        """
-        Calcule le temps restant avant la fin du jeu.
-        :return: Temps restant en millisecondes.
-        """
-        elapsed_time = pygame.time.get_ticks() - self.start_time
-        return max(0, self.time_limit - elapsed_time)
-
+    def verifier_grille(self):
+        for row in self.grille:
+            for case in row:
+                if case is None:
+                    print("Erreur : Case manquante dans la grille !")
 
     def draw_map(self):
         """Affiche les cases spécifiques de la map actuelle."""
         for case in self.current_map["cases"]:
             case.draw(self.screen )
+
+    
+    def get_time_remaining(self):
+        """
+        Calcule le temps restant avant la fin du jeu.
+        Retourne le temps restant en secondes.
+        """
+        elapsed_time = pygame.time.get_ticks() - self.start_time
+        remaining_time = max(0, self.time_limit - elapsed_time)  # Évite les valeurs négatives
+        return remaining_time // 1000  # Retourne en secondes
+    
+    def draw_timer(self):
+        """
+        Affiche le temps restant sur l'écran de jeu.
+        """
+        # Calculer le temps restant
+        elapsed_time = pygame.time.get_ticks() - self.start_time
+        time_remaining = max(0, self.time_limit - elapsed_time) // 1000  # Convertir en secondes
+
+        minutes = time_remaining // 60
+        seconds = time_remaining % 60
+        timer_text = f"{minutes:02}:{seconds:02}"  # Format MM:SS
+
+        # Dessiner le texte du timer
+        font = pygame.font.Font(None, 36)  # Police par défaut
+        text = font.render(f"Temps restant : {timer_text}", True, (255, 255, 255))  # Texte en blanc
+        self.screen.blit(text, (10, 10))  # Position en haut à gauche
+
 
     def handle_interactions(self):
         """Gère les interactions entre les unités et les cases de la map actuelle."""
@@ -210,6 +234,7 @@ class Game :
 
         # Aucune condition de victoire atteinte
         return False
+
     def draw_timer(self):
         """
         Affiche le temps restant sur l'écran de jeu.
@@ -223,79 +248,64 @@ class Game :
         text = font.render(timer_text, True, (255, 255, 255))  # Blanc
         self.screen.blit(text, (10, 10))  # Affiche en haut à gauche
 
-
-
     def flip_display(self):
-        """Affiche le jeu uniquement sur la surface dédiée (game_surface)."""
+        """Optimise l'affichage en dessinant tout sur une seule surface avant de mettre à jour l'écran."""
 
         # Dimensions de la fenêtre et de la surface de jeu
-        game_width = int(WIDTH * 0.85)  # 3/4 de la largeur
+        game_width = int(WIDTH * 0.85)  # 85% de la largeur pour le terrain de jeu
         game_height = HEIGHT
-        game_surface = pygame.Surface((game_width, game_height))  # Crée une surface pour le jeu
+        game_surface = pygame.Surface((game_width, game_height))  # Surface temporaire pour le jeu
 
-        # Charger et afficher le terrain de la map sur la surface de jeu
+        # Charger et afficher le terrain de la map
         try:
             terrain_image = pygame.image.load(self.current_map["terrain"])
-            terrain_image = pygame.transform.scale(terrain_image, (CELL_SIZE, CELL_SIZE))  # Adapter la taille à une cellule
+            terrain_image = pygame.transform.scale(terrain_image, (CELL_SIZE, CELL_SIZE))
         except pygame.error as e:
             print(f"Erreur lors du chargement de l'image du terrain : {e}")
             pygame.quit()
             exit()
 
-        # Dessiner le terrain sur toute la grille (dans la surface de jeu)
         for x in range(0, game_width, CELL_SIZE):
             for y in range(0, game_height, CELL_SIZE):
                 game_surface.blit(terrain_image, (x, y))
 
-        # Charger et Dessiner le ciel  (dans la surface de jeu)
-        try:
-            ciel= pygame.image.load("Projet-Python-/images/ciel.jpg")
-            ciel= pygame.transform.scale(ciel, (2*CELL_SIZE, CELL_SIZE))  # Adapter la taille à une cellule
-        except pygame.error as e:
-            print(f"Erreur lors du chargement de l'image du terrain : {e}")
-            pygame.quit()
-            exit()
-        for x in range(0, game_width, CELL_SIZE):
-            game_surface.blit(ciel, (2*x, 0))
-
-        # Afficher les cases spécifiques de la map
+        # Dessiner les cases spécifiques de la map
         for case in self.current_map["cases"]:
             case.draw(game_surface)
 
-        # Afficher les unités sur la surface de jeu
-        for unit in self.player1_units+ self.player2_units:
+        # Dessiner les unités
+        for unit in self.player1_units + self.player2_units:
             unit.draw(game_surface)
 
-        # Blitter la surface de jeu (game_surface) sur la fenêtre principale (screen)
+        # Dessiner la surface de jeu sur l'écran principal
         self.screen.blit(game_surface, (0, 0))
 
-        # Dessiner le panneau latéral (1/4 de la fenêtre) pour les options, pouvoirs, etc.
-        sidebar_width = WIDTH - game_width  # 1/4 de la largeur
+        # Dessiner la barre latérale (1/4 de la fenêtre pour options, pouvoirs, etc.)
+        sidebar_width = WIDTH - game_width
         sidebar_surface = pygame.Surface((sidebar_width, HEIGHT))
-        back_lat= pygame.image.load("Projet-Python-/images/back_lateral.png")
-        back_lat= pygame.transform.scale(back_lat, (3*sidebar_width , HEIGHT))
-        sidebar_surface.blit(back_lat,(-200, 0))  # Fond sombre pour le panneau
+        try:
+            back_lat = pygame.image.load("images/back_lateral.png")
+            back_lat = pygame.transform.scale(back_lat, (3 * sidebar_width, HEIGHT))
+            sidebar_surface.blit(back_lat, (-200, 0))
+        except pygame.error as e:
+            print(f"Erreur lors du chargement de l'image de la barre latérale : {e}")
+            sidebar_surface.fill((0, 0, 0))  # Noir en cas d'erreur
 
-        
-        # Rafraîchir l'affichage
         self.screen.blit(sidebar_surface, (game_width, 0))
+
+        # Rafraîchir l'écran UNE SEULE FOIS
         pygame.display.flip()
+
 
 
     def get_case_at(self, x, y):
         """
-        Retourne la case à une position donnée ou None si aucune case n'est définie.
-
-        Si aucune case spécifique n'est trouvée, retourne une case traversable par défaut
-        si les coordonnées sont dans les limites de la grille.
+        Retourne la case à une position donnée ou None si elle est hors limites.
         """
-        for case in self.current_map["cases"]:
-            if case.x == x and case.y == y:
-                return case
-        # Par défaut, retourne une case traversable si elle est dans la grille
-        if 0 <= x < WIDTH and 0 <= y < HEIGHT:
-            return Case(x, y, "herbe")  # Case traversable par défaut
-        return None
+        if 0 <= x < WIDTH // CELL_SIZE and 0 <= y < HEIGHT // CELL_SIZE:
+            return self.grille[y][x]  # Accès direct à la case
+        return None  # Hors des limites de la grille
+
 
     def draw_instructions_select_unit(self):
         """
@@ -305,7 +315,7 @@ class Game :
         game_width = int(WIDTH * 0.85)  # 3/4 de la largeur
         sidebar_width = WIDTH - game_width  # 1/4 de la largeur
         sidebar_surface = pygame.Surface((sidebar_width, HEIGHT))
-        back_lat= pygame.image.load("Projet-Python-/images/back_lateral.png")
+        back_lat= pygame.image.load("images/back_lateral.png")
         back_lat= pygame.transform.scale(back_lat, (3*sidebar_width , HEIGHT))
         sidebar_surface.blit(back_lat,(-200, 0))  # Fond sombre pour le panneau
 
@@ -319,7 +329,7 @@ class Game :
         ]
 
         # Dessiner chaque ligne d'instruction
-        font = pygame.font.Font("Projet-Python-/images/GameBoy.ttf", 10)
+        font = pygame.font.Font("images/GameBoy.ttf", 10)
         y = 150
         for line in instructions:
                 text = font.render(line, True, WHITE)
@@ -330,79 +340,89 @@ class Game :
 
     def handle_unit_turn(self, player_units, current_turn):
         """
-        Gère le tour d'une unité. Chaque unité peut se déplacer.
+        Gère le tour d'une unité. Chaque unité peut se déplacer ou attaquer.
 
         Parameters:
         ----------
         player_units : list
             La liste des unités du joueur en cours.
         current_turn : str
-            Le joueur en cours ('player' ou 'enemy').
+            Le joueur en cours ('player1' ou 'player2').
         """
+        # Réinitialisation des distances des unités au début du tour
         for unit in player_units:
             unit.reset_distance()
+
         selected_unit = None
         has_acted = False
         self.draw_instructions_select_unit()
 
-        
-
         while not has_acted:
-
             for event in pygame.event.get():
-                
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
+
                 if event.type == pygame.KEYDOWN:
-                    # Sélection d'une unité
-                    if event.key == pygame.K_z and len(player_units) > 0:
-                        selected_unit = player_units[0]
-                    elif event.key == pygame.K_q and len(player_units) > 1:
-                        selected_unit =player_units[1]
-                    elif event.key == pygame.K_s and len(player_units) > 2:
-                        selected_unit = player_units[2] 
-                    elif event.key == pygame.K_d and len(player_units) > 3:
-                        selected_unit = player_units[3]
+                    # Sélection de l'unité
+                    if event.key in [pygame.K_z, pygame.K_q, pygame.K_s, pygame.K_d]:
+                        unit_index = {'z': 0, 'q': 1, 's': 2, 'd': 3}.get(event.unicode, -1)
+                        if 0 <= unit_index < len(player_units):
+                            selected_unit = player_units[unit_index]
+                            print(f"{selected_unit.name} est sélectionné.")
+                            self.flip_display()
 
-                    # Si une unité est sélectionnée
-                    if selected_unit:
-                        print(f"{selected_unit.name} est sélectionné.")
+                    # Déplacement de l'unité sélectionnée
+                    if selected_unit and event.key in [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT]:
+                        directions = {
+                            pygame.K_UP: "up",
+                            pygame.K_DOWN: "down",
+                            pygame.K_LEFT: "left",
+                            pygame.K_RIGHT: "right",
+                        }
+                        selected_unit.move(directions[event.key], self)
+                        pygame.time.delay(100)  # Empêche les déplacements trop rapides
                         self.flip_display()
 
-                        if event.key == pygame.K_UP:
-                            selected_unit.move("up", self)
-                        elif event.key == pygame.K_DOWN:
-                            selected_unit.move("down", self)
-                        elif event.key == pygame.K_LEFT:
-                            selected_unit.move("left", self)
-                        elif event.key == pygame.K_RIGHT:
-                            selected_unit.move("right", self)
-                            
-                            
-                        # Gérer les compétences
-                        elif event.key == pygame.K_1:  # Première compétence
-                            if len(unit.competences) >= 1:
-                                competence = unit.competences[0]
-                                self.utiliser_competence(unit, competence, player_units)
-                        elif event.key == pygame.K_2:  # Deuxième compétence
-                            if len(unit.competences) >= 2:
-                                competence = unit.competences[1]
-                                self.utiliser_competence(unit, competence, player_units)
-                        elif event.key == pygame.K_3:  # Troisième compétence
-                            if len(unit.competences) >= 3:
-                                competence = unit.competences[2]
-                                self.utiliser_competence(unit, competence, player_units)
+                    # Utilisation des compétences
+                    elif selected_unit and event.key in [pygame.K_1, pygame.K_2, pygame.K_3]:
+                        competence_index = event.key - pygame.K_1
+                        if competence_index < len(selected_unit.competences):
+                            competence = selected_unit.competences[competence_index]
+                            self.utiliser_competence(selected_unit, competence, player_units)
+                            self.flip_display()
 
+                    # Attaque de l'unité sélectionnée
+                    elif selected_unit and event.key == pygame.K_a:
+                        enemy_units = self.player2_units if current_turn == 'player1' else self.player1_units
+                        ennemis_a_portee = [
+                            enemy for enemy in enemy_units
+                            if abs(selected_unit.x - enemy.x) + abs(selected_unit.y - enemy.y) <= selected_unit.attack_range
+                        ]
 
-                        # Met à jour l'affichage
-                        self.flip_display()
+                        if ennemis_a_portee:
+                            # Attaquer le premier ennemi trouvé
+                            enemy = ennemis_a_portee[0]
+                            selected_unit.attaquer(enemy)
+                            print(f"{selected_unit.name} attaque {enemy.name} !")
 
-                        # Fin du tour avec la touche ESPACE
-                        if event.key == pygame.K_SPACE:
+                            # Si l'ennemi est éliminé
+                            if enemy.health <= 0:
+                                print(f"{enemy.name} est éliminé !")
+                                enemy_units.remove(enemy)
+                                self.flip_display()
+
                             has_acted = True
                             selected_unit.is_selected = False
-    
+                        else:
+                            print("Aucun ennemi à portée pour cette unité.")
+
+                        # Fin du tour après l'attaque
+                        has_acted = True
+                        selected_unit.is_selected = False
+                        break
+
+
     
     def utiliser_competence(self, unit, competence, player_units):
         """
@@ -424,21 +444,29 @@ class Game :
         print(result)                
 
     def play_game(self):
+        """Gère la boucle principale du jeu."""
         current_turn = 'player1'
+        clock = pygame.time.Clock()
 
         while self.player1_units and self.player2_units:
+            start_time = pygame.time.get_ticks()
+
+            # Gère les tours des joueurs
             if current_turn == 'player1':
-                print("Tour du joueur 1.")
-                for unit in self.player1_units:
-                    unit.reset_distance()
                 self.handle_unit_turn(self.player1_units, current_turn)
             else:
-                print("TTour du joueur 2.")
-                for unit in self.player2_units:
-                    unit.reset_distance()
                 self.handle_unit_turn(self.player2_units, current_turn)
+
+            # Nettoyer les unités mortes
+            self.player1_units = [unit for unit in self.player1_units if unit.health > 0]
+            self.player2_units = [unit for unit in self.player2_units if unit.health > 0]
 
             # Alterner les tours
             current_turn = 'player2' if current_turn == 'player1' else 'player1'
 
-    
+            # Limiter le temps par frame
+            elapsed_time = pygame.time.get_ticks() - start_time
+            clock.tick(FPS)
+
+
+        

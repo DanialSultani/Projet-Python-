@@ -1,3 +1,4 @@
+
 import pygame
 
 # Constantes
@@ -46,31 +47,41 @@ class Unit:
         Dessine l'unité sur la grille.
     """
 
-    def __init__(self, x, y, team, name):
+    def __init__(self, x, y, team, name,attack_power,health):
         self.x = x
         self.y = y
         self.team = team
         self.is_selected = False
         self.name = name 
-
+        self.health=health
+        self.max_health=health
+        self.attack_power=attack_power
+        self.distance_remaining = 0  # Distance que l'unité peut encore parcourir
         # Initialisation des capacités selon le type d'unité
         if self.name == 'soldat':
             self.max_distance = 2 # Distance maximale 
             self.health = 6
             self.max_health = 6
-
+            self.attack_range = 8
         elif self.name == 'medecin':
             self.max_distance = 2  # Distance de déplacement
             self.health = 2
             self.max_health = 2
+            self.heal_power = 2 
+            self.attack_range = 8
         elif self.name == 'helico':
             self.max_distance = 4  # Distance maximale (4 cases)
             self.health = 3
             self.max_health = 3
+            self.attack_power = 3  # Pouvoir d'attaque
+            self.attack_range = 3
+            
         elif self.name == 'char':
             self.max_distance = 10 # Distance maximale (2 cases)
             self.health = 6
             self.max_health =6
+            self.attack_power = 3  # Pouvoir d'attaque
+            self.attack_range = 2
 
     
     def reset_distance(self):
@@ -88,53 +99,37 @@ class Unit:
         game : Game
             L'instance du jeu pour accéder aux cases et vérifier les déplacements autorisés.
         """
-        # Récupérer la case actuelle avant le déplacement
-        current_case = game.get_case_at(self.x, self.y)
-        # Calcul des nouvelles coordonnées en fonction de la direction
-        new_x, new_y = self.x, self.y
-        if self.distance_remaining > 0:  # Vérifier s'il reste des déplacements
+        if self.distance_remaining <= 0:
+            print(f"{self.name} ne peut plus se déplacer ce tour.")
+            return
 
-            if direction == "up":
-                new_y -= 1
-            elif direction == "down":
-                new_y += 1
-            elif direction == "left":
-                new_x -= 1
-            elif direction == "right":
-                new_x += 1
-            else:
-                print(f"Direction invalide : {direction}")
-                return
-            # Réduire le nombre de déplacements restants après chaque mouvement
-            self.distance_remaining -= 1
-            self.has_moved = True  # Marquer l'unité comme ayant bougé
-        else:
-            print("Cette unité a épuisé ses déplacements.")
-            # Vérifier la traversabilité de la nouvelle case
+        # Calcul des nouvelles coordonnées
+        dx, dy = 0, 0
+        if direction == "up":
+            dy = -1
+        elif direction == "down":
+            dy = 1
+        elif direction == "left":
+            dx = -1
+        elif direction == "right":
+            dx = 1
+
+        new_x, new_y = self.x + dx, self.y + dy
+
+        # Vérifie si la case cible est valide et traversable
         target_case = game.get_case_at(new_x, new_y)
-        if target_case and target_case.effet.get("traversable", True):
-            # Réinitialiser les effets de la case actuelle
-            if current_case:
-                self.reset_effects()
-            # Appliquer les effets de la nouvelle case
-            target_case.appliquer_effet(self, game.screen)
-            # Mettre à jour la position de l'unité
-            self.x, self.y = new_x, new_y
+        if not target_case or not target_case.effet.get("traversable", True):
+            print(f"Déplacement bloqué : case non traversable à ({new_x}, {new_y}).")
+            return
 
-        # Vérifie les limites de déplacement (distance autorisée)
-        cases_autorisees = self.get_deplacement_autorise(game)
-        if (new_x, new_y) in cases_autorisees:
-            # Vérifie si la case cible est traversable
-            target_case = game.get_case_at(new_x, new_y)
-            if target_case and target_case.effet.get("traversable", True):
-                # Mettre à jour la position de l'unité
-                self.x, self.y = new_x, new_y
-                self.distance_remaining -= 1  # Réduit la distance restante pour ce tour
-                print(f"{self.name} déplacé à ({self.x}, {self.y}). Distance restante : {self.distance_remaining}.")
-            else:
-                print(f"Déplacement bloqué : case non traversable à ({new_x}, {new_y}).")
-        else:
-            print(f"Déplacement interdit : hors du rayon de déplacement autorisé ({new_x}, {new_y}).")
+        # Mettre à jour la position et appliquer les effets
+        self.x, self.y = new_x, new_y
+        self.distance_remaining -= 1
+        print(f"{self.name} déplacé à ({self.x}, {self.y}). Distance restante : {self.distance_remaining}.")
+
+        # Appliquer les effets de la case après le déplacement
+        target_case.appliquer_effet(self, game.screen)
+
 
 
 
@@ -165,7 +160,7 @@ class Unit:
                     if target_case and target_case.effet.get("traversable", True):
                         cases_accessibles.append((new_x, new_y))
         return cases_accessibles
-
+    
     def reset_effects(self):
         """Réinitialise les effets temporaires de l'unité."""
         self.invisible = False
@@ -183,32 +178,25 @@ class Unit:
         self.health = max(0, self.health - montant)
         print(f"{self.name} reçoit {montant} de dégâts. Santé restante : {self.health}/{self.max_health}.")
 
-
     def draw(self, screen):
         """Affiche l'unité sur l'écran."""
 
         # Charger et redimensionner les sprites
         if self.name == 'soldat':
-            sprite = pygame.image.load("Projet-Python-/images/soldat.png")
+            sprite = pygame.image.load("images/soldat.png")
             sprite = pygame.transform.scale(sprite, (2*CELL_SIZE , 2*CELL_SIZE ))
         elif self.name == 'medecin':
-            sprite = pygame.image.load("Projet-Python-/images/medecin.png")
+            sprite = pygame.image.load("images/medecin.png")
             sprite = pygame.transform.scale(sprite, (2*CELL_SIZE, 2*CELL_SIZE))
         elif self.name == 'helico':
-            sprite = pygame.image.load("Projet-Python-/images/helico.png")
+            sprite = pygame.image.load("images/helico.png")
             sprite = pygame.transform.scale(sprite, (3 * (CELL_SIZE - 2), 3 * (CELL_SIZE - 2)))
         elif self.name == 'char':
-            sprite = pygame.image.load("Projet-Python-/images/char.png")
+            sprite = pygame.image.load("images/char.png")
             sprite = pygame.transform.scale(sprite, (3 * CELL_SIZE, 3 * CELL_SIZE))
         else:
             return  # Si aucun type ne correspond
-        
-        # Appliquer la transparence si l'unité est invisible
-        if self.invisible:
-            sprite.set_alpha(128)  # 128 = moitié transparent (valeurs de 0 à 255)
-        else:
-            sprite.set_alpha(255)  # 255 = opaque
-            
+
         # Dessiner le sprite
         screen.blit(sprite, (self.x * CELL_SIZE, self.y * CELL_SIZE))
 
@@ -253,6 +241,20 @@ class Unit:
         pygame.draw.rect(screen, color, (health_x, health_y, health_width, health_height), border_radius=borders)
     # Liste pour les compétences attribuées
         self.competences = []
+    
+    def attaquer(self, target):
+        """Attaque une unité cible si elle est dans le rayon d'attaque."""
+        distance = abs(self.x - target.x) + abs(self.y - target.y)
+        if distance <= self.attack_range:
+            if hasattr(self, 'heal_power'):  # Si c'est un docteur, il soigne
+                target.health = min(target.max_health, target.health + self.heal_power)
+                print(f"{self.name} soigne {target.name} pour {self.heal_power} points de vie.")
+            else:  # Sinon, il attaque
+                target.health -= self.attack_power
+                print(f"{self.name} attaque {target.name} pour {self.attack_power} dégâts.")
+
+        else:
+            print("Cible hors de portée.")
 
     def attribuer_competences(self, gestion_competences):
         """

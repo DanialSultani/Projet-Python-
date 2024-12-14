@@ -2,7 +2,7 @@ import pygame
 
 
 class Competence:
-    def __init__(self, nom, type_competence, puissance, portee, zone_effet=1, precision=100):
+    def __init__(self, nom, type_competence, puissance, portee, zone_effet=1, precision=100, effet_special=None):
         """
             Attributs
         ---------
@@ -154,4 +154,4 @@ bouclier = Competence(
 gestion_competences.ajouter_competence(arme_a_feu)
 gestion_competences.ajouter_competence(soin)
 gestion_competences.ajouter_competence(grenade)
-gestion_competences.ajouter_competence(bouclier)
+gestion_competences.ajouter_competence(bouclier) 
