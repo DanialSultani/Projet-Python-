@@ -1,4 +1,4 @@
-
+from abc import ABC
 import pygame
 
 # Constantes
@@ -15,7 +15,7 @@ BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
 
 
-class Unit:
+class Unit(ABC):
     """
     Classe pour représenter une unité.
 
@@ -47,43 +47,22 @@ class Unit:
         Dessine l'unité sur la grille.
     """
 
-    def __init__(self, x, y, team, name,attack_power,health):
+    def __init__(self, x, y, team, name, max_health, attack_power, attack_range, max_distance):
+
+        # Initialisation des attributs
+        self.name = name 
+        self.max_health = max_health
+        self.attack_power = attack_power
+        self.attack_range = attack_range
+        self.max_distance = max_distance
+        # Initialisation des etats
         self.x = x
         self.y = y
         self.team = team
         self.is_selected = False
-        self.name = name 
-        self.health=health
-        self.max_health=health
-        self.attack_power=attack_power
+        self.health = max_health
         self.distance_remaining = 0  # Distance que l'unité peut encore parcourir
-        # Initialisation des capacités selon le type d'unité
-        if self.name == 'soldat':
-            self.max_distance = 2 # Distance maximale 
-            self.health = 6
-            self.max_health = 6
-            self.attack_range = 8
-        elif self.name == 'medecin':
-            self.max_distance = 2  # Distance de déplacement
-            self.health = 2
-            self.max_health = 2
-            self.heal_power = 2 
-            self.attack_range = 8
-        elif self.name == 'helico':
-            self.max_distance = 4  # Distance maximale (4 cases)
-            self.health = 3
-            self.max_health = 3
-            self.attack_power = 3  # Pouvoir d'attaque
-            self.attack_range = 3
-            
-        elif self.name == 'char':
-            self.max_distance = 10 # Distance maximale (2 cases)
-            self.health = 6
-            self.max_health =6
-            self.attack_power = 3  # Pouvoir d'attaque
-            self.attack_range = 2
-
-    
+        
     def reset_distance(self):
         """Réinitialise la distance restante au maximum a chaque tour."""
         self.distance_remaining = self.max_distance
@@ -287,3 +266,51 @@ class Unit:
         print(f"Compétences de {self.name} ({self.team}):")
         for competence in self.competences:
             print(f"- {competence.nom} (Type: {competence.type_competence})")
+
+class Tank(Unit):
+    name = "char"
+    max_distance = 1 # Distance maximale (2 cases)
+    max_health = 6
+    attack_power = 3  # Pouvoir d'attaque
+    attack_range = 2
+    def __init__(self, x, y, team):
+        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance)
+
+class Helico(Unit):
+    name = "helico"
+    # Initialisation des capacités 
+    max_distance = 4  # Distance maximale (4 cases)
+    max_health = 3
+    attack_power = 3  # Pouvoir d'attaque
+    attack_range = 3
+    
+    def __init__(self, x, y, team):
+        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance)
+
+class Medecin(Unit):
+    name = "medecin"
+    # Initialisation des capacités 
+    max_distance = 2  # Distance de déplacement
+    health = 2
+    max_health = 2
+    heal_power = 2 
+    attack_power = 3  # Pouvoir d'attaque
+    attack_range = 3
+    def __init__(self, x, y, team):
+        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance)
+
+class Soldat(Unit):
+    name = "soldat"
+    # Initialisation des capacités 
+    max_distance = 2 # Distance maximale 
+    health = 6
+    max_health = 6
+    attack_power = 1  # Pouvoir d'attaque
+    attack_range = 8
+    def __init__(self, x, y, team):
+        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance)
+
+if __name__ == "__main__":
+    tank = Tank(2, 3, "player1", "char", 3, 6)
+    print(tank.name)  # char
+    
