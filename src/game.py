@@ -2,10 +2,13 @@ import pygame
 from random import *
 from unit import *
 from case import *
-from interface import *
+from interface import * 
 
+# Variable globale pour verrouiller les appels à choose_map
+choose_map_called = False
 
 def main():
+    global choose_map_called  # Accès à la variable globale
     # Initialisation de Pygame
     pygame.init()
 
@@ -28,13 +31,24 @@ def main():
         print(f"Erreur lors du chargement de l'image : {e}")
         return
 
-    # Afficher le menu principal avec les fresques en fond
+    print("Lancement du menu principal...")
     if not main_menu(screen, fresque):
+        print("Quitter le jeu depuis le menu principal.")
         pygame.quit()
         exit()
 
+    if not choose_map_called:  # Vérifie si choose_map a déjà été appelé
+        print("Sélection de la carte...")
+        selected_map_index = choose_map(screen)
+        choose_map_called = True  # Empêche tout autre appel
+        print(f"Carte choisie : {selected_map_index}")
+    else:
+        print("choose_map ne sera pas appelé à nouveau.")
+
     # Instanciation du jeu
-    game = Game(screen)
+    game = Game(screen,selected_map_index)
+    # Afficher immédiatement la carte sélectionnée
+    game.flip_display()
 
     # Boucle principale
     clock = pygame.time.Clock()
@@ -43,24 +57,28 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-
         game.play_game()
+        # Afficher le timer
+        game.draw_timer()
+        # Vérifier les conditions de victoire
+        if game.check_victory():  # Ajout de la vérification des conditions de victoire
+            running = False  # Arrêter la boucle si une équipe a gagné
         clock.tick(FPS)
 
 def main_menu(screen, fresque):
     """Affiche le menu principal avec les fresques comme fond."""
-    # Ppolices
+    # Polices
     font = pygame.font.Font("images/GameBoy.ttf", 15)
 
     # Textes du menu
-    menu_options = ["Press ENTER to start ", "SETTINGS","QUIT"]
+    menu_options = ["Press ENTER to start", "SETTINGS", "QUIT"]
     selected_option = 0
 
-    # Positions 
+    # Positions
     positions = [
-        (WIDTH // 2, HEIGHT // 2 -40),  # Position pour "Play"
-        (WIDTH // 2, HEIGHT // 2 ),   # Position pour "Settings"
-        (WIDTH // 2, HEIGHT // 2 +40)   # Position pour "Settings"
+        (WIDTH // 2, HEIGHT // 2 - 40),  # Position pour "Play"
+        (WIDTH // 2, HEIGHT // 2),       # Position pour "Settings"
+        (WIDTH // 2, HEIGHT // 2 + 40)   # Position pour "Quit"
     ]
 
     clock = pygame.time.Clock()
@@ -75,7 +93,7 @@ def main_menu(screen, fresque):
 
         # Afficher les options du menu
         for i, (option, position) in enumerate(zip(menu_options, positions)):
-            text = font.render(option, True, BLACK)
+            text = font.render(option, True, BLACK if i == selected_option else WHITE)
             text_rect = text.get_rect(center=position)
             screen.blit(text, text_rect)
 
@@ -92,35 +110,38 @@ def main_menu(screen, fresque):
         # Gestion des événements
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return False
+                return False  # Quitter le jeu
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     selected_option = (selected_option - 1) % len(menu_options)
                 elif event.key == pygame.K_DOWN:
                     selected_option = (selected_option + 1) % len(menu_options)
                 elif event.key == pygame.K_RETURN:
-                    if selected_option == 0:
-                        choose_map(screen)
-                        return True  # Lancer le jeu
-                    elif selected_option == 1:
+                    if selected_option == 0:  # Play
+                        return True  # Retourne True pour lancer le jeu
+                    elif selected_option == 1:  # Settings
                         settings_menu(screen)  # Ouvrir le menu de paramètres
-                    elif selected_option == 2:
-                        return False  # Ouvrir le menu de paramètres
+                    elif selected_option == 2:  # Quit
+                        return False  # Quitter le jeu
 
         # Mettre à jour l'écran
         pygame.display.flip()
         clock.tick(FPS)
 
+def main_menu(screen, fresque):
+    """Affiche le menu principal avec les fresques comme fond."""
+    # Ppolices
+    font = pygame.font.Font("images/GameBoy.ttf", 15)
+
 def settings_menu(screen):
     """Affiche une fenêtre avec plusieurs onglets dans le menu des paramètres."""
     # Charger l'image de fond
     try:
-        background = pygame.image.load("images/back.png")
+        background = pygame.image.load("back.png")
         background = pygame.transform.scale(background, (WIDTH, HEIGHT))  # Ajuste à la taille de l'écran
     except pygame.error as e:
         print(f"Erreur lors du chargement de l'image de fond : {e}")
         return
-    
     # Texte pour les onglets
     tabs = ["But du Jeu", "Personnages", "Cases"]
     current_tab = 0
@@ -132,26 +153,32 @@ def settings_menu(screen):
         "- Capturez le drapeau ennemi.",
         "- Défendez votre drapeau et gagnez des points.",
         "- Deux façons de gagner :",
-        "   1. Capture du drapeau avant la fin du temps impartie.",
+        "   1. Capture du drapeau avant la fin du temps imparti.",
         "   2. Points par éliminations.",
     ]
 
     characters = [
-        {"name": "Soldat", "image": "images/soldat.png", "description": "Vie: 6 \n Vitesse: 2 \n Pouvoir: Attaque infligeant 1 point de vie dans 8 cases.\n Rapide et resistant "},
-        {"name": "Medecin", "image": "images/medecin.png", "description": "Vie: 1 \n Vitesse: 3 \n Pouvoir: guérison de 2 points de vie dans 8 cases. \n Rapide et agile, mais fragile."},
-        {"name": "Helicoptere ", "image": "images/helico.png", "description": "Vie: 2 \n Vitesse: 4 \n Pouvoir: Attaque infligeant des dégâts de 3 points dans 3 cases.\n Lent mais avec plus de vie."},
-        {"name": "Tank", "image": "images/char.png", "description": "Vie: 6 \n Vitesse: 1 \n Pouvoir: Attaque infligeant des dégâts de 3 points de vie dans 2 cases.\n Lent mais avec plus de vie."},
-
-        
+        {"name": "Soldat", "image": "soldat.png", "description": "Vie: 6\nVitesse: 2\nPouvoir: Attaque infligeant 1 point de vie dans 8 cases.\nRapide et résistant."},
+        {"name": "Médecin", "image": "medecin.png", "description": "Vie: 1\nVitesse: 3\nPouvoir: Guérison de 2 points de vie dans 8 cases.\nRapide et agile, mais fragile."},
+        {"name": "Hélicoptère", "image": "helico.png", "description": "Vie: 2\nVitesse: 4\nPouvoir: Attaque infligeant 3 points de dégâts dans 3 cases.\nRapide mais vulnérable."},
+        {"name": "Tank", "image": "char.png", "description": "Vie: 6\nVitesse: 1\nPouvoir: Attaque infligeant 3 points de dégâts dans 2 cases.\nLent mais puissant."}
     ]
 
     cases = [
-        {"name": "Arbre", "image": "images/arbre.png", "description": "Rapide et agile, mais fragile."},
-        {"name": "buisson", "image": "images/buisson.png", "description": "Rapide et agile, mais fragile."},
-        {"name": "oasis ", "image": "images/oasis.webp", "description": "Lent mais avec plus de vie."},
-        {"name": "Bonhomme de neige", "image": "images/bonhomme.png", "description": "Rapide et agile, mais fragile."},
-
+        {"name": "Arbre", "image": "arbre.png", "description": "Bloque les projectiles et ne peut pas être traversé par les unités."},
+        {"name": "Mur", "image": "mur.png", "description": "Structure solide bloquant les déplacements et les attaques."},
+        {"name": "Buisson", "image": "buisson.png", "description": "Rend les unités invisibles aux attaques ennemies."},
+        {"name": "Dune", "image": "dune.png", "description": "Accélère légèrement le déplacement des unités."},
+        {"name": "Chameau", "image": "chameau.png", "description": "Augmente la vitesse des unités qui montent dessus."},
+        {"name": "Bonhomme de neige", "image": "bonhomme.png", "description": "Décor traversable mais bloque les projectiles."},
+        {"name": "Oasis", "image": "oasis.webp", "description": "Soigne les unités qui passent dessus."},
+        {"name": "Puits", "image": "puit.png", "description": "Soigne légèrement les unités."},
+        {"name": "Feu", "image": "feu.png", "description": "Inflige des dégâts aux unités traversantes."},
+        {"name": "Glace", "image": "glace.png", "description": "Surface glissante modifiant les déplacements."},
+        {"name": "Sapin", "image": "sapin.png", "description": "Bloque la vue et les projectiles, similaire à un arbre."},
+        {"name": "Drapeau", "image": "flag.png", "description": "Objectif principal du jeu. Capturez-le pour gagner."}
     ]
+
 
     # Charger les images des personnages
     try:
@@ -171,7 +198,7 @@ def settings_menu(screen):
         return
 
     # Police
-    font = pygame.font.Font("images/GameBoy.ttf", 20)
+    font = pygame.font.Font("GameBoy.ttf", 20)
     small_font = pygame.font.SysFont("Times New Roman", 20)
 
     running = True
@@ -260,6 +287,7 @@ def settings_menu(screen):
 
 def choose_map(screen):
     """Permet au joueur de choisir une carte avant de lancer le jeu."""
+    print("choose_map appelé")  # Trace pour confirmer l'appel
     # Charger l'image de fond
     try:
         background = pygame.image.load("images/back.png")
@@ -267,7 +295,6 @@ def choose_map(screen):
     except pygame.error as e:
         print(f"Erreur lors du chargement de l'image de fond : {e}")
         return
-    
     # Charger les images des cartes
     maps = [
         {"name": "Foret", "image": "images/fresque_1.png"},
@@ -294,19 +321,15 @@ def choose_map(screen):
     # Police pour le texte
     font = pygame.font.Font("images/GameBoy.ttf", 20)
 
-    # Curseur initial
     selected_index = 0
+    map_selected = False  # Contrôle pour quitter la boucle après sélection
 
-    running = True
-
-    while running:
-        # Fond d'écran noir
+    while not map_selected:
+        # Dessiner le fond et les cartes
         screen.blit(background, (0, 0))
 
-        # Afficher chaque carte et son nom
         for i, map_data in enumerate(maps):
             screen.blit(map_data["img"], positions[i])
-            # Couleur du texte : en surbrillance si sélectionnée
             color = BLACK if i == selected_index else WHITE
             text = font.render(map_data["name"], True, color)
             text_rect = text.get_rect(center=(positions[i][0] + 150, positions[i][1] + 220))
@@ -323,10 +346,30 @@ def choose_map(screen):
                 elif event.key == pygame.K_RIGHT:  # Déplacer le curseur à droite
                     selected_index = (selected_index + 1) % len(maps)
                 elif event.key == pygame.K_RETURN:  # Lancer le jeu avec la carte sélectionnée
-                    return selected_index
+                    print(f"Carte sélectionnée : {maps[selected_index]['name']}")
+                    afficher_map_selectionnee(screen, maps[selected_index])  # Affiche immédiatement la carte
+                    map_selected = True  # Quitter la boucle
 
-        # Mettre à jour l'affichage
         pygame.display.flip()
+
+    return selected_index
+
+
+
+
+
+
+def afficher_map_selectionnee(screen, map_data):
+    """Affiche immédiatement la carte sélectionnée."""
+    try:
+        terrain = pygame.image.load(map_data["image"])
+        terrain = pygame.transform.scale(terrain, (WIDTH, HEIGHT))  # Adapter à la taille de l'écran
+        screen.blit(terrain, (0, 0))
+        pygame.display.flip()
+    except pygame.error as e:
+        print(f"Erreur lors de l'affichage de la carte sélectionnée : {e}")
+
+
         
 if __name__ == "__main__":
     main()
