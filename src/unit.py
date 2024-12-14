@@ -14,6 +14,13 @@ RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
 
+SPRITES = {
+    "soldat": pygame.transform.scale(pygame.image.load("images/soldat.png"), (2 * CELL_SIZE, 2 * CELL_SIZE)),
+    "medecin": pygame.transform.scale(pygame.image.load("images/medecin.png"), (2 * CELL_SIZE, 2 * CELL_SIZE)),
+    "helico": pygame.transform.scale(pygame.image.load("images/helico.png"), (3 * CELL_SIZE, 3 * CELL_SIZE)),
+    "char": pygame.transform.scale(pygame.image.load("images/char.png"), (3 * CELL_SIZE, 3 * CELL_SIZE)),
+}
+
 
 class Unit(ABC):
     """
@@ -279,7 +286,7 @@ class Tank(Unit):
 class Helico(Unit):
     name = "helico"
     # Initialisation des capacités 
-    max_distance = 4  # Distance maximale (4 cases)
+    max_distance = 50  # Distance maximale (4 cases)
     max_health = 3
     attack_power = 3  # Pouvoir d'attaque
     attack_range = 3

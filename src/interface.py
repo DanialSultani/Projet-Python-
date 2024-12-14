@@ -1,7 +1,6 @@
 import pygame
 import random
 from unit import *
-from game import *
 from case import *
 from case import Case
 from competence import *
@@ -212,12 +211,12 @@ class Game :
         """
         # Condition 1 : Toutes les unités de l'équipe 2 sont éliminées
         if all(unit.health <= 0 for unit in self.player2_units):
-            show_victory_screen(self.screen, "player")
+            show_victory_screen(self.screen, "player1")
             return True
 
         # Condition 2 : Toutes les unités de l'équipe 1 sont éliminées
         elif all(unit.health <= 0 for unit in self.player1_units):
-            show_victory_screen(self.screen, "enemy")
+            show_victory_screen(self.screen, "player2")
             return True
 
         # Condition 3 : Fin du temps
@@ -226,9 +225,9 @@ class Game :
             player2_units_alive = sum(1 for unit in self.player2_units if unit.health > 0)
 
             if player1_units_alive > player2_units_alive:
-                show_victory_screen(self.screen, "player")
+                show_victory_screen(self.screen, "player1")
             elif player2_units_alive > player1_units_alive:
-                show_victory_screen(self.screen, "enemy")
+                show_victory_screen(self.screen, "player2")
             else:
                 show_victory_screen(self.screen, "draw")  # Match nul
             return True
@@ -412,15 +411,12 @@ class Game :
                                 enemy_units.remove(enemy)
                                 self.flip_display()
 
-                            has_acted = True
-                            selected_unit.is_selected = False
                         else:
                             print("Aucun ennemi à portée pour cette unité.")
-
-                        # Fin du tour après l'attaque
+                     # Fin du tour avec la touche ESPACE
+                    if event.key == pygame.K_SPACE:
                         has_acted = True
                         selected_unit.is_selected = False
-                        break
 
 
     
