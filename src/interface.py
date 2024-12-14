@@ -49,15 +49,15 @@ class Game :
         
         self.screen = screen
 
-        self.player1_units = [Unit(2, 2,  'player1','soldat',2,10),
-                             Unit(3, 1, 'player1','medecin',2,10),
-                             Unit(0, 3, 'player1','helico',2,10),
-                             Unit(10, 10, 'player1','char',2,10)]
+        self.player1_units = [Unit(2, 2,  'player1','soldat', attack_power=1, health=6),
+                             Unit(3, 1, 'player1','medecin', attack_power=1, health=3),
+                             Unit(0, 3, 'player1','helico', attack_power=3, health=4),
+                             Unit(10, 10, 'player1','char', attack_power=3, health=6)]
 
-        self.player2_units = [Unit(20, 12, 'player2','soldat',2,10),
-                            Unit(22, 11, 'player2','medecin',2,10),
-                            Unit(19, 14, 'player2','helico',2,10),
-                            Unit(11, 12, 'player2','char',2,10)]
+        self.player2_units = [Unit(20, 12, 'player2','soldat', attack_power=1, health=6),
+                            Unit(22, 11, 'player2','medecin', attack_power=1, health=3),
+                            Unit(19, 14, 'player2','helico', attack_power=3, health=4),
+                            Unit(11, 12, 'player2','char', attack_power=3, health=6)]
         
         # Liste des maps avec un terrain spécifique  
         self.maps = [
@@ -308,9 +308,7 @@ class Game :
 
                     # Si une unité est sélectionnée
                     if selected_unit:
-                        print(f"{selected_unit.name} est sélectionné.")
-                        self.flip_display()
-
+                        
                         if event.key == pygame.K_UP:
                             selected_unit.move("up", self)
                         elif event.key == pygame.K_DOWN:

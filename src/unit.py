@@ -7,7 +7,7 @@ CELL_SIZE = 50
 WIDTH = (GRID_SIZE * CELL_SIZE)+600
 game_width = int(WIDTH * 0.85)  # 3/4 de la largeur
 HEIGHT = GRID_SIZE * CELL_SIZE
-FPS = 30
+FPS = 60
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -59,18 +59,18 @@ class Unit:
         self.distance_remaining = 0  # Distance que l'unité peut encore parcourir
         # Initialisation des capacités selon le type d'unité
         if self.name == 'soldat':
-            self.max_distance = 2 # Distance maximale 
+            self.max_distance = 4 # Distance maximale 
             self.health = 6
             self.max_health = 6
             self.attack_range = 8
         elif self.name == 'medecin':
-            self.max_distance = 2  # Distance de déplacement
+            self.max_distance = 4  # Distance de déplacement
             self.health = 2
             self.max_health = 2
             self.heal_power = 2 
             self.attack_range = 8
         elif self.name == 'helico':
-            self.max_distance = 4  # Distance maximale (4 cases)
+            self.max_distance = 8  # Distance maximale (4 cases)
             self.health = 3
             self.max_health = 3
             self.attack_power = 3  # Pouvoir d'attaque
