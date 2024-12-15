@@ -7,16 +7,20 @@ from sons import *
 
 # Variable globale pour verrouiller les appels à choose_map
 choose_map_called = False
+sound_effects = SoundEffect()
 
 def main():
     global choose_map_called  # Accès à la variable globale
     # Initialisation de Pygame
     pygame.init()
 
+    
+    
     # Instanciation de la fenêtre
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Flags of Glory")
-    
+    #SON
+    sound_effects = SoundEffect()
     # Charger les fresques
     try:
         fresque = [
@@ -66,9 +70,16 @@ def main():
         if game.check_victory():  # Ajout de la vérification des conditions de victoire
             running = False  # Arrêter la boucle si une équipe a gagné
         clock.tick(FPS)
+        
+    # Arrêter le son de fond à la fin du jeu
+    son_fond.stop()
+
 
 def main_menu(screen, fresque):
     """Affiche le menu principal avec les fresques comme fond."""
+    # son 
+    sound_effects.sounds['fond'].play(loops=-1)
+
     # Polices
     font = pygame.font.Font("Projet-Python-/images/GameBoy.ttf", 15)
 
@@ -316,7 +327,14 @@ def choose_map(screen):
 
     selected_index = 0
     map_selected = False  # Contrôle pour quitter la boucle après sélection
-
+    
+    # Charger le son de clic
+    try:
+        click_sound = pygame.mixer.Sound("Projet-Python-/sons/click.mp3")
+    except pygame.error as e:
+        print(f"Erreur lors du chargement du son de clic : {e}")
+        click_sound = None
+        
     while not map_selected:
         # Dessiner le fond et les cartes
         screen.blit(background, (0, 0))
@@ -331,18 +349,26 @@ def choose_map(screen):
         # Gestion des événements
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                sound_effects.sounds['click'].play()
                 pygame.quit()
                 exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:  # Déplacer le curseur à gauche
                     selected_index = (selected_index - 1) % len(maps)
+                    sound_effects.sounds['click'].play()
                 elif event.key == pygame.K_RIGHT:  # Déplacer le curseur à droite
                     selected_index = (selected_index + 1) % len(maps)
+                    sound_effects.sounds['click'].play()
                 elif event.key == pygame.K_RETURN:  # Lancer le jeu avec la carte sélectionnée
                     print(f"Carte sélectionnée : {maps[selected_index]['name']}")
+                    
+                    sound_effects.sounds['click'].play()
+                        
                     afficher_map_selectionnee(screen, maps[selected_index])  # Affiche immédiatement la carte
                     map_selected = True  # Quitter la boucle
-
+                    # Diminue le son 
+                    sound_effects.set_volume('fond', 0.1)
+                    
         pygame.display.flip()
 
     return selected_index
@@ -365,4 +391,4 @@ def afficher_map_selectionnee(screen, map_data):
 
         
 if __name__ == "__main__":
-    main()
+    main() 

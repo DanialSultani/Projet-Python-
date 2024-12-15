@@ -373,7 +373,7 @@ class Game :
                     if event.key in [pygame.K_z, pygame.K_q, pygame.K_s, pygame.K_d]:
                         unit_index = {'z': 0, 'q': 1, 's': 2, 'd': 3}.get(event.unicode, -1)
                         if 0 <= unit_index < len(player_units):
-                            self.sound.play('click') #ajout du son 
+                            self.sound.play('click') #ajout du son
                             selected_unit = player_units[unit_index]
                             print(f"{selected_unit.name} est sélectionné.")
                             self.flip_display()
