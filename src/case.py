@@ -1,5 +1,4 @@
 import pygame
-import random
 from utils import show_victory_screen
 
 # Constantes pour l'adaptation dynamique
@@ -101,7 +100,7 @@ class Case :
             "flag2": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
 
             # Zones bonus/malus
-            "puit": {"traversable": False, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "puit": {"traversable": True, "bloque_balle": False, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "oasis": {"traversable": True, "bloque_balle": False, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 0},
 
             # Terrain inconnu

@@ -7,6 +7,7 @@ GRID_SIZE = 16
 CELL_SIZE = 50
 WIDTH = (GRID_SIZE * CELL_SIZE)+600
 game_width = int(WIDTH * 0.85)  # 3/4 de la largeur
+game_width = int(WIDTH * 0.85)  # 3/4 de la largeur
 HEIGHT = GRID_SIZE * CELL_SIZE
 FPS = 30
 WHITE = (255, 255, 255)
@@ -73,6 +74,7 @@ class Unit(ABC):
         self.distance_remaining = 0  # Distance que l'unité peut encore parcourir
         
     def reset_distance(self):
+        """Réinitialise la distance restante au maximum a chaque tour."""
         """Réinitialise la distance restante au maximum a chaque tour."""
         self.distance_remaining = self.max_distance
 
