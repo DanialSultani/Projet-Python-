@@ -1,5 +1,6 @@
 from abc import ABC
 import pygame
+from competence import *
 
 # Constantes
 GRID_SIZE = 16
@@ -54,14 +55,15 @@ class Unit(ABC):
         Dessine l'unité sur la grille.
     """
 
-    def __init__(self, x, y, team, name, max_health, attack_power, attack_range, max_distance):
+    def __init__(self, x, y, team, name, max_health, attack_power, attack_range, max_distance,competence):
 
         # Initialisation des attributs
         self.name = name 
         self.max_health = max_health
         self.attack_power = attack_power
         self.attack_range = attack_range
-        self.max_distance = max_distance
+        self.max_distance = max_distance # Vitesse
+        self.competence = competence
         # Initialisation des etats
         self.x = x
         self.y = y
@@ -102,12 +104,10 @@ class Unit(ABC):
 
         new_x, new_y = self.x + dx, self.y + dy
 
-        # Récupérer les cases accessibles
-        cases_accessibles = self.get_deplacement_autorise(game)
-
-        # Vérifie si la case cible est valide ET dans les cases accessibles
-        if (new_x, new_y) not in cases_accessibles:
-            print(f"Déplacement bloqué : case non autorisée ou non traversable à ({new_x}, {new_y}).")
+        # Vérifie si la case cible est valide et traversable
+        target_case = game.get_case_at(new_x, new_y)
+        if not target_case or not target_case.effet.get("traversable", True):
+            print(f"Déplacement bloqué : case non traversable à ({new_x}, {new_y}).")
             return
 
         # Mettre à jour la position et appliquer les effets
@@ -116,10 +116,7 @@ class Unit(ABC):
         print(f"{self.name} déplacé à ({self.x}, {self.y}). Distance restante : {self.distance_remaining}.")
 
         # Appliquer les effets de la case après le déplacement
-        target_case = game.get_case_at(self.x, self.y)
-        if target_case:
-            target_case.appliquer_effet(self, game.screen)
-
+        target_case.appliquer_effet(self, game.screen)
 
 
 
@@ -144,7 +141,7 @@ class Unit(ABC):
                 new_y = self.y + dy
 
                 # Vérifie si les coordonnées sont dans les limites de la grille
-                if 0 <= new_x < game_width and 0 <= new_y < HEIGHT:
+                if 0 <= new_x < game_width and 0 <= new_y < HEIGHT-1:
                     target_case = game.get_case_at(new_x, new_y)
 
                     # Vérifie si la case est traversable
@@ -163,9 +160,9 @@ class Unit(ABC):
 
         :param montant: Nombre de points de dégâts infligés.
         """
-        if self.invincible:
+        """if self.invincible:
             print(f"{self.name} est invincible et ne reçoit pas de dégâts.")
-            return
+            return"""
         self.health = max(0, self.health - montant)
         print(f"{self.name} reçoit {montant} de dégâts. Santé restante : {self.health}/{self.max_health}.")
 
@@ -247,57 +244,28 @@ class Unit(ABC):
         else:
             print("Cible hors de portée.")
 
-    def attribuer_competences(self, gestion_competences):
-        """
-        Attribue des compétences à l'unité en fonction de son type (name).
-
-        :param gestion_competences: Instance de GestionCompetences
-        """
-        if self.name == 'soldat':
-            # Soldat reçoit Arme à feu
-            self.competences.append(gestion_competences.get_competence("Arme à feu"))
-
-        elif self.name == 'medecin':
-            # Médecin reçoit Soin et Arme à feu
-            self.competences.append(gestion_competences.get_competence("Soin"))
-            self.competences.append(gestion_competences.get_competence("Arme à feu"))
-
-        elif self.name == 'helico':
-            # Hélico reçoit Grenade
-            self.competences.append(gestion_competences.get_competence("Grenade"))
-
-        elif self.name == 'char':
-            # Char reçoit Grenade et Bouclier
-            self.competences.append(gestion_competences.get_competence("Grenade"))
-            self.competences.append(gestion_competences.get_competence("Bouclier"))
-
-    def afficher_competences(self):
-        """
-        Affiche les compétences de l'unité.
-        """
-        print(f"Compétences de {self.name} ({self.team}):")
-        for competence in self.competences:
-            print(f"- {competence.nom} (Type: {competence.type_competence})")
-
 class Tank(Unit):
     name = "char"
-    max_distance = 1 # Distance maximale (2 cases)
+    max_distance = 100 # Distance maximale (2 cases)
     max_health = 6
     attack_power = 3  # Pouvoir d'attaque
     attack_range = 2
+    competence = [Canon(),Booster()]
     def __init__(self, x, y, team):
-        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance)
+        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance,self.competence)
+    
 
-class Helico(Unit):
+class Helico(Unit): 
     name = "helico"
     # Initialisation des capacités 
     max_distance = 50  # Distance maximale (4 cases)
     max_health = 3
     attack_power = 3  # Pouvoir d'attaque
     attack_range = 3
-    
+    competence = [ArmeAFeu(),Booster()]
+
     def __init__(self, x, y, team):
-        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance)
+        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance,self.competence)
 
 class Medecin(Unit):
     name = "medecin"
@@ -308,8 +276,10 @@ class Medecin(Unit):
     heal_power = 2 
     attack_power = 3  # Pouvoir d'attaque
     attack_range = 3
+    competence = [ArmeAFeu(),Soin()]
+
     def __init__(self, x, y, team):
-        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance)
+        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance,self.competence)
 
 class Soldat(Unit):
     name = "soldat"
@@ -319,8 +289,10 @@ class Soldat(Unit):
     max_health = 6
     attack_power = 1  # Pouvoir d'attaque
     attack_range = 8
+    competence = [ArmeAFeu(),Booster()]
+
     def __init__(self, x, y, team):
-        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance)
+        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance,self.competence)
 
 if __name__ == "__main__":
     tank = Tank(2, 3, "player1")

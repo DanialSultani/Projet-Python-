@@ -1,8 +1,8 @@
-import pygame
+from abc import ABC, abstractmethod
+import random
 
-
-class Competence:
-    def __init__(self, nom, type_competence, puissance, portee, zone_effet=1, precision=100, effet_special=None):
+class Competence(ABC):
+    def __init__(self, nom, puissance, portee, precision,type_competence):
         """
             Attributs
         ---------
@@ -33,140 +33,92 @@ class Competence:
         self.type_competence = type_competence
         self.puissance = puissance
         self.portee = portee
-        self.zone_effet = zone_effet
         self.precision = precision
-
-    def utiliser(self, utilisateur, cibles):
+    @abstractmethod
+    def use(self, utilisateur, allies, ennemis):
         """
         Utilise la compétence sur des cibles spécifiques.
         
-        :param utilisateur: Unité qui utilise la compétence (objet)
-        :param cibles: Liste des cibles affectées par la compétence (liste d'objets)
-        :param grille: Référence à la grille de jeu pour vérifier les portées/positions (objet Grille)
-        :return: Résultat de l'utilisation (str ou autre selon besoin)
+        :param utilisateur: L'unité utilisant la compétence
+        :param allies: Liste des alliés
+        :param ennemis: Liste des cibles
+        :return: Message de confirmation ou d'erreur
         """
-        if not self._est_a_portee(utilisateur, cibles):
-            return f"{self.nom} échoue : cible hors de portée."
-
-        if self.zone_effet > 1:
-            print(f"{self.nom} affecte une zone de {self.zone_effet} cases.")
-            # Parcourir les cibles dans la zone d'effet
-            for cible in cibles:
-                if self._touche():
-                    self.appliquer_effet(utilisateur, cible)
-        else:
-            for cible in cibles:
-                if self._touche():
-                    self.appliquer_effet(utilisateur, cible)
-
-        if self.type_competence == "attaque":
-            for cible in cibles:
-                if self._touche():
-                    dommage = self.puissance
-                    cible.recevoir_dommage(dommage)
-                    print(f"{self.nom} inflige {dommage} à {cible.nom}.")
-                else:
-                    print(f"{self.nom} a raté {cible.nom}.")
-
-        elif self.type_competence == "soin":
-            for cible in cibles:
-                soin = self.puissance
-                cible.recevoir_soin(soin)
-                print(f"{self.nom} soigne {soin} points de vie à {cible.nom}.")
-
-        
-
-        return f"{self.nom} utilisée avec succès."
-
-    def _est_a_portee(self, utilisateur, cibles, grille):
+        pass
+    
+    def distance(self, utilisateur, cible):
         """
-        Vérifie si toutes les cibles sont à portée.
+        Calcule la distance entre l'utilisateur et la cible.
         
         :param utilisateur: L'unité utilisant la compétence
-        :param cibles: Liste des cibles
-        :param grille: Grille de jeu pour vérifier les distances
-        :return: True si les cibles sont à portée, False sinon
+        :param cible: La cible de la compétence
+        :return: La distance entre l'utilisateur et la cible
         """
-        for cible in cibles:
-            distance = grille.calculer_distance(utilisateur.position, cible.position)
-            if distance > self.portee:
-                return False
-        return True
-
-    def _touche(self):
-        """
-        Détermine si l'attaque touche la cible en fonction de la précision.
-        :return: True si l'attaque touche, False sinon
-        """
-        import random
-        return random.randint(1, 100) <= self.precision
-
-
-
+        return abs(utilisateur.x - cible.x) + abs(utilisateur.y - cible.y)
     
-class GestionCompetences:
+class Attaque(Competence):
+    def __init__(self,nom, puissance, portee, precision):
+        super().__init__(nom, puissance, portee, precision, type_competence="attaque")
+    def use(self, utilisateur, allies, ennemis):
+        for ennemie in ennemis:
+            distance = self.distance(utilisateur, ennemie)
+            if distance <= self.portee:
+                rand = random.randint(0, 100)
+                if rand <= self.precision:
+                    dommage = self.puissance * utilisateur.attack_power
+                    
+                    ennemie.recevoir_dommage(dommage)
+                    print(f"{utilisateur.name} inflige {dommage} à {ennemie.name}.")
+                else:
+                    print(f"{utilisateur.name} a raté {ennemie.name}.")
+
+            
+class Defense(Competence):
+    def __init__(self,nom, puissance, precision):
+        super().__init__(nom, puissance, precision=precision, portee=0 ,type_competence="defense")
+    @abstractmethod
+    def use(self, utilisateur, allies, ennemis):
+        effect = utilisateur.attack_power * self.puissance 
+        return effect
+
+class ArmeAFeu(Attaque):
     def __init__(self):
-        # Initialisation du dictionnaire des compétences
-        self.competences = {}
-
-    def ajouter_competence(self, competence):
-        """
-        Ajoute une compétence au dictionnaire avec son nom comme clé.
-        """
-        self.competences[competence.nom] = competence
-
-    def get_competence(self, nom):
-        """
-        Récupère une compétence par son nom.
-        """
-        return self.competences.get(nom)
+        super().__init__(
+            nom="Arme à feu",
+            puissance=1,
+            portee=5,
+            precision=90
+        )
+class Canon(Attaque):   
+    def __init__(self):
+        super().__init__(
+            nom="Canon",
+            puissance=3,
+            portee=3,
+            precision=75
+        )
+        
+class Soin(Defense):
+    def __init__(self):
+        super().__init__(
+            nom="Soin",
+            puissance=2,
+            precision=100
+        )
+    def use(self, utilisateur, allies, ennemis):
+        effect = super().use( utilisateur, allies, ennemis)
+        utilisateur.health = min(utilisateur.max_health, utilisateur.health + effect)
+        
+class Booster(Defense):
+    def __init__(self):
+        super().__init__(
+            nom="Booster",
+            puissance=1,
+            precision=100,
+        )
+    def use(self, utilisateur, allies, ennemis):
+        _ = super().use( utilisateur, allies, ennemis)
+        utilisateur.max_distance += 1
     
 
-# Création de la gestion des compétences
-gestion_competences = GestionCompetences()
-
-# Création des compétences (comme dans les exemples précédents)
-arme_a_feu = Competence(
-    nom="Arme à feu",
-    type_competence="attaque",
-    puissance=40,
-    portee=5,
-    zone_effet=1,
-    precision=85
-)
-
-soin = Competence(
-    nom="Soin",
-    type_competence="soin",
-    puissance=30,
-    portee=3,
-    zone_effet=3,
-    precision=100
-)
-
-grenade = Competence(
-    nom="Grenade",
-    type_competence="attaque",
-    puissance=50,
-    portee=6,
-    zone_effet=2,
-    precision=75
-)
-
-bouclier = Competence(
-    nom="Bouclier",
-    type_competence="effet",
-    puissance=0,
-    portee=1,
-    zone_effet=1,
-    precision=100,
-    effet_special=lambda utilisateur, cibles, grille: [
-        setattr(cible, "defense", cible.defense + 20) for cible in cibles
-    ]
-)
-
-# Ajout des compétences dans le gestionnaire
-gestion_competences.ajouter_competence(arme_a_feu)
-gestion_competences.ajouter_competence(soin)
-gestion_competences.ajouter_competence(grenade)
-gestion_competences.ajouter_competence(bouclier) 
+    

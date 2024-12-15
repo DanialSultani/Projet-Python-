@@ -1,4 +1,5 @@
 import pygame
+from sons import *
 
 # Constantes pour l'adaptation dynamique
 CELL_SIZE = 50
@@ -16,6 +17,9 @@ FPS = 30
 def show_victory_screen(screen, winner):
     # Polices
     font = pygame.font.Font("images/GameBoy.ttf", 50)
+    sound= SoundEffect()
+    sound.play('victoir') #ajout du son
+
     # Dessiner la fresque comme fond
     back = pygame.image.load("images/back.png")
     back= pygame.transform.scale(back, (WIDTH, HEIGHT))
@@ -24,7 +28,7 @@ def show_victory_screen(screen, winner):
     if winner == "draw":
         message = "Match nul !"
     else:
-        message = f"Victoire du {'Joueur 1' if winner == 'player' else 'Joueur 2'} !"
+        message = f"Victoire du {'Joueur 1' if winner == 'player1' else 'Joueur 2'} !"
     text = font.render(message, True, RED)
     text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
     screen.blit(text, text_rect)
