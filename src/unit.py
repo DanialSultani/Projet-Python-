@@ -1,11 +1,12 @@
 from abc import ABC
 import pygame
-from sons import *
+from competence import *
 
 # Constantes
 GRID_SIZE = 16
 CELL_SIZE = 50
 WIDTH = (GRID_SIZE * CELL_SIZE)+600
+game_width = int(WIDTH * 0.85)  # 3/4 de la largeur
 game_width = int(WIDTH * 0.85)  # 3/4 de la largeur
 HEIGHT = GRID_SIZE * CELL_SIZE
 FPS = 30
@@ -16,10 +17,10 @@ BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
 
 SPRITES = {
-    "soldat": pygame.transform.scale(pygame.image.load("Projet-Python-/images/soldat.png"), (2 * CELL_SIZE, 2 * CELL_SIZE)),
-    "medecin": pygame.transform.scale(pygame.image.load("Projet-Python-/images/medecin.png"), (2 * CELL_SIZE, 2 * CELL_SIZE)),
-    "helico": pygame.transform.scale(pygame.image.load("Projet-Python-/images/helico.png"), (3 * CELL_SIZE, 3 * CELL_SIZE)),
-    "char": pygame.transform.scale(pygame.image.load("Projet-Python-/images/char.png"), (3 * CELL_SIZE, 3 * CELL_SIZE)),
+    "soldat": pygame.transform.scale(pygame.image.load("images/soldat.png"), (2 * CELL_SIZE, 2 * CELL_SIZE)),
+    "medecin": pygame.transform.scale(pygame.image.load("images/medecin.png"), (2 * CELL_SIZE, 2 * CELL_SIZE)),
+    "helico": pygame.transform.scale(pygame.image.load("images/helico.png"), (3 * CELL_SIZE, 3 * CELL_SIZE)),
+    "char": pygame.transform.scale(pygame.image.load("images/char.png"), (3 * CELL_SIZE, 3 * CELL_SIZE)),
 }
 
 
@@ -55,14 +56,15 @@ class Unit(ABC):
         Dessine l'unité sur la grille.
     """
 
-    def __init__(self, x, y, team, name, max_health, attack_power, attack_range, max_distance):
+    def __init__(self, x, y, team, name, max_health, attack_power, attack_range, max_distance,competence):
 
         # Initialisation des attributs
         self.name = name 
         self.max_health = max_health
         self.attack_power = attack_power
         self.attack_range = attack_range
-        self.max_distance = max_distance
+        self.max_distance = max_distance # Vitesse
+        self.competence = competence
         # Initialisation des etats
         self.x = x
         self.y = y
@@ -72,6 +74,7 @@ class Unit(ABC):
         self.distance_remaining = 0  # Distance que l'unité peut encore parcourir
         
     def reset_distance(self):
+        """Réinitialise la distance restante au maximum a chaque tour."""
         """Réinitialise la distance restante au maximum a chaque tour."""
         self.distance_remaining = self.max_distance
 
@@ -140,7 +143,7 @@ class Unit(ABC):
                 new_y = self.y + dy
 
                 # Vérifie si les coordonnées sont dans les limites de la grille
-                if 0 <= new_x < game_width and 0 <= new_y < HEIGHT:
+                if 0 <= new_x < game_width and 0 <= new_y < HEIGHT-1:
                     target_case = game.get_case_at(new_x, new_y)
 
                     # Vérifie si la case est traversable
@@ -159,9 +162,9 @@ class Unit(ABC):
 
         :param montant: Nombre de points de dégâts infligés.
         """
-        if self.invincible:
+        """if self.invincible:
             print(f"{self.name} est invincible et ne reçoit pas de dégâts.")
-            return
+            return"""
         self.health = max(0, self.health - montant)
         print(f"{self.name} reçoit {montant} de dégâts. Santé restante : {self.health}/{self.max_health}.")
 
@@ -170,16 +173,16 @@ class Unit(ABC):
 
         # Charger et redimensionner les sprites
         if self.name == 'soldat':
-            sprite = pygame.image.load("Projet-Python-/images/soldat.png")
+            sprite = pygame.image.load("images/soldat.png")
             sprite = pygame.transform.scale(sprite, (2*CELL_SIZE , 2*CELL_SIZE ))
         elif self.name == 'medecin':
-            sprite = pygame.image.load("Projet-Python-/images/medecin.png")
+            sprite = pygame.image.load("images/medecin.png")
             sprite = pygame.transform.scale(sprite, (2*CELL_SIZE, 2*CELL_SIZE))
         elif self.name == 'helico':
-            sprite = pygame.image.load("Projet-Python-/images/helico.png")
+            sprite = pygame.image.load("images/helico.png")
             sprite = pygame.transform.scale(sprite, (3 * (CELL_SIZE - 2), 3 * (CELL_SIZE - 2)))
         elif self.name == 'char':
-            sprite = pygame.image.load("Projet-Python-/images/char.png")
+            sprite = pygame.image.load("images/char.png")
             sprite = pygame.transform.scale(sprite, (3 * CELL_SIZE, 3 * CELL_SIZE))
         else:
             return  # Si aucun type ne correspond
@@ -243,57 +246,28 @@ class Unit(ABC):
         else:
             print("Cible hors de portée.")
 
-    def attribuer_competences(self, gestion_competences):
-        """
-        Attribue des compétences à l'unité en fonction de son type (name).
-
-        :param gestion_competences: Instance de GestionCompetences
-        """
-        if self.name == 'soldat':
-            # Soldat reçoit Arme à feu
-            self.competences.append(gestion_competences.get_competence("Arme à feu"))
-
-        elif self.name == 'medecin':
-            # Médecin reçoit Soin et Arme à feu
-            self.competences.append(gestion_competences.get_competence("Soin"))
-            self.competences.append(gestion_competences.get_competence("Arme à feu"))
-
-        elif self.name == 'helico':
-            # Hélico reçoit Grenade
-            self.competences.append(gestion_competences.get_competence("Grenade"))
-
-        elif self.name == 'char':
-            # Char reçoit Grenade et Bouclier
-            self.competences.append(gestion_competences.get_competence("Grenade"))
-            self.competences.append(gestion_competences.get_competence("Bouclier"))
-
-    def afficher_competences(self):
-        """
-        Affiche les compétences de l'unité.
-        """
-        print(f"Compétences de {self.name} ({self.team}):")
-        for competence in self.competences:
-            print(f"- {competence.nom} (Type: {competence.type_competence})")
-
 class Tank(Unit):
     name = "char"
-    max_distance = 1 # Distance maximale (2 cases)
+    max_distance = 100 # Distance maximale (2 cases)
     max_health = 6
     attack_power = 3  # Pouvoir d'attaque
     attack_range = 2
+    competence = [Canon(),Booster()]
     def __init__(self, x, y, team):
-        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance)
+        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance,self.competence)
+    
 
-class Helico(Unit):
+class Helico(Unit): 
     name = "helico"
     # Initialisation des capacités 
     max_distance = 50  # Distance maximale (4 cases)
     max_health = 3
     attack_power = 3  # Pouvoir d'attaque
     attack_range = 3
-    
+    competence = [ArmeAFeu(),Booster()]
+
     def __init__(self, x, y, team):
-        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance)
+        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance,self.competence)
 
 class Medecin(Unit):
     name = "medecin"
@@ -304,8 +278,10 @@ class Medecin(Unit):
     heal_power = 2 
     attack_power = 3  # Pouvoir d'attaque
     attack_range = 3
+    competence = [ArmeAFeu(),Soin()]
+
     def __init__(self, x, y, team):
-        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance)
+        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance,self.competence)
 
 class Soldat(Unit):
     name = "soldat"
@@ -315,8 +291,12 @@ class Soldat(Unit):
     max_health = 6
     attack_power = 1  # Pouvoir d'attaque
     attack_range = 8
+    competence = [ArmeAFeu(),Booster()]
+
     def __init__(self, x, y, team):
-        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance)
+        super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance,self.competence)
 
-
+#if __name__ == "__main__":
+#    tank = Tank(2, 3, "player1", "char", 3, 6)
+#    print(tank.name)  # char
     
