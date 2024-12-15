@@ -4,12 +4,11 @@ from unit import *
 from case import *
 from case import Case
 from competence import *
-
+from sons import *
 
 # Constantes pour l'adaptation dynamique
 CELL_SIZE = 50
 GRID_SIZE = 16  # Nombre de cellules par dimension
-
 
 
 # Couleur 
@@ -18,7 +17,6 @@ RED = (255, 0, 0)
 GRAY = (50, 50, 50)
 BLUE= (0, 0, 255, 255)
 FPS = 60
-
 
 
 class Game :
@@ -117,6 +115,7 @@ class Game :
         self.initialiser_grille()
         #self.verifier_grille()
         self.font = pygame.font.Font("images/GameBoy.ttf", 10)
+        self.sound = SoundEffect()
 
     def initialiser_grille(self):
         """
@@ -339,6 +338,7 @@ class Game :
                         unit_index = {'z': 0, 'q': 1, 's': 2, 'd': 3}.get(event.unicode, -1)
                         if 0 <= unit_index < len(player_units):
                             selected_unit = player_units[unit_index]
+                            self.sound.play('click') #ajout du son
                             print(f"{selected_unit.name} est sélectionné.")
                             self.flip_display()
 
@@ -351,6 +351,7 @@ class Game :
                             pygame.K_RIGHT: "right",
                         }
                         selected_unit.move(directions[event.key], self)
+                        self.sound.play('marche')
                         pygame.time.delay(100)  # Empêche les déplacements trop rapides
                         self.flip_display()
 
@@ -378,24 +379,7 @@ class Game :
 
     
     
-    def utiliser_competence(self, unit, competence, player_units):
-        """
-        Permet à une unité d'utiliser une compétence.
-
-        :param unit: L'unité qui utilise la compétence.
-        :param competence: La compétence à utiliser.
-        :param game: L'instance du jeu pour gérer les effets sur les cibles.
-        """
-        # Récupérer les cibles à portée
-        cibles = self.get_cibles_a_portee(unit, competence, player_units)
-
-        if not cibles:
-            print(f"{unit.name} ({unit.team}) ne peut pas utiliser {competence.nom} : aucune cible à portée.")
-            return
-
-        # Appliquer la compétence
-        result = competence.utiliser(unit, cibles)
-        print(result)                
+          
 
     def play_game(self):
         """Gère la boucle principale du jeu."""
