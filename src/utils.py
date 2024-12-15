@@ -10,21 +10,28 @@ GRAY = (50, 50, 50)
 WIDTH = 1400
 HEIGHT = 800
 
+  
+
 FPS = 30
 def show_victory_screen(screen, winner):
-    screen.fill(BLACK)
-    font = pygame.font.Font(None, 74)
+    # Polices
+    font = pygame.font.Font("images/GameBoy.ttf", 50)
+    # Dessiner la fresque comme fond
+    back = pygame.image.load("images/back.png")
+    back= pygame.transform.scale(back, (WIDTH, HEIGHT))
+    screen.blit(back, (0, 0))
+
     if winner == "draw":
         message = "Match nul !"
     else:
-        message = f"Victoire de l'équipe {'Joueur' if winner == 'player' else 'Adverse'} !"
+        message = f"Victoire du {'Joueur 1' if winner == 'player' else 'Joueur 2'} !"
     text = font.render(message, True, RED)
     text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
     screen.blit(text, text_rect)
     pygame.display.flip()
     
-    small_font = pygame.font.Font(None, 36)
-    instruction = "Appuyez sur [Entrée] pour retourner au menu principal."
+    small_font = pygame.font.Font("images/GameBoy.ttf", 36)
+    instruction = "Appuyez sur Enter pour rejouer."
     instruction_surface = small_font.render(instruction, True, WHITE)
     instruction_rect = instruction_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
     screen.blit(instruction_surface, instruction_rect)
@@ -39,5 +46,5 @@ def show_victory_screen(screen, winner):
                 pygame.quit()
                 exit()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:  # Retour au menu principal
+                if event.key == pygame.K_RETURN:  # Retour au jeu
                     return

@@ -123,8 +123,8 @@ class Case :
 
         # Effets de soin
         if self.effet.get("soigne"):
-            unite.vie = min(unite.vie_max, unite.vie + 2)  # Soigne sans dépasser le maximum
-            print(f"{unite.name} a été soigné à {unite.vie}/{unite.vie_max} points de vie.")
+            unite.health = min(unite.max_health, unite.health + 2)  # Soigne sans dépasser le maximum
+            print(f"{unite.name} a été soigné à {unite.health}/{unite.max_health} points de vie.")
 
         # Effets de vitesse (positifs et négatifs)
         if self.effet.get("boost_vitesse") != 0:
@@ -146,15 +146,15 @@ class Case :
 
         # Effets de dégât feu
         if self.propriete == "feu":
-            unite.vie = max(0, unite.vie - 1)  # Inflige des dégâts
-            print(f"{unite.name} a subi des dégâts du feu. Vie restante : {unite.vie}/{unite.vie_max}.")
+            unite.health = max(0, unite.health - 1)  # Inflige des dégâts
+            print(f"{unite.name} a subi des dégâts du feu. Vie restante : {unite.health}/{unite.max_health}.")
         if self.propriete == "glace":
             print(f"{unite.name} est ralenti par la glace.")
 
         # Vérification de victoire (drapeaux)
-        if self.propriete == "flag1" and unite.team == "enemy":
+        if self.propriete == "flag1" and unite.team == "player2":
             show_victory_screen(screen, "enemy")
-        elif self.propriete == "flag2" and unite.team == "player":
+        elif self.propriete == "flag2" and unite.team == "player1":
             show_victory_screen(screen, "player")
 
 

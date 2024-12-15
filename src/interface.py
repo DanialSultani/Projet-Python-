@@ -1,7 +1,6 @@
 import pygame
 import random
 from unit import *
-from game import *
 from case import *
 from case import Case
 from competence import *
@@ -49,15 +48,15 @@ class Game :
         
         self.screen = screen
 
-        self.player1_units = [Unit(2, 2,  'player1','soldat',2,10),
-                             Unit(3, 1, 'player1','medecin',2,10),
-                             Unit(0, 3, 'player1','helico',2,10),
-                             Unit(10, 10, 'player1','char',2,10)]
+        self.player1_units = [Soldat(2, 2,  'player1'),
+                             Medecin(3, 1, 'player1'),
+                             Helico(0, 3, 'player1'),
+                             Tank(10, 10, 'player1')]
 
-        self.player2_units = [Unit(20, 12, 'player2','soldat',2,10),
-                            Unit(22, 11, 'player2','medecin',2,10),
-                            Unit(19, 14, 'player2','helico',2,10),
-                            Unit(11, 12, 'player2','char',2,10)]
+        self.player2_units = [Soldat(20, 12, 'player2'),
+                            Medecin(22, 11, 'player2'),
+                            Helico(19, 14, 'player2'),
+                            Tank(11, 12, 'player2')]
         
         self.start_time = pygame.time.get_ticks()  # Enregistre le temps de départ
         self.time_limit = 300000  # Par exemple, 5 minutes = 300000 ms (5 * 60 * 1000)
@@ -118,6 +117,7 @@ class Game :
         # Initialisation de la grille avec toutes les cases traversables
         self.initialiser_grille()
         self.verifier_grille()
+        self.font = pygame.font.Font("images/GameBoy.ttf", 10)
 
     def initialiser_grille(self):
         """
@@ -211,12 +211,12 @@ class Game :
         """
         # Condition 1 : Toutes les unités de l'équipe 2 sont éliminées
         if all(unit.health <= 0 for unit in self.player2_units):
-            show_victory_screen(self.screen, "player")
+            show_victory_screen(self.screen, "player1")
             return True
 
         # Condition 2 : Toutes les unités de l'équipe 1 sont éliminées
         elif all(unit.health <= 0 for unit in self.player1_units):
-            show_victory_screen(self.screen, "enemy")
+            show_victory_screen(self.screen, "player2")
             return True
 
         # Condition 3 : Fin du temps
@@ -225,9 +225,9 @@ class Game :
             player2_units_alive = sum(1 for unit in self.player2_units if unit.health > 0)
 
             if player1_units_alive > player2_units_alive:
-                show_victory_screen(self.screen, "player")
+                show_victory_screen(self.screen, "player1")
             elif player2_units_alive > player1_units_alive:
-                show_victory_screen(self.screen, "enemy")
+                show_victory_screen(self.screen, "player2")
             else:
                 show_victory_screen(self.screen, "draw")  # Match nul
             return True
@@ -355,7 +355,6 @@ class Game :
 
         selected_unit = None
         has_acted = False
-        self.draw_instructions_select_unit()
 
         while not has_acted:
             for event in pygame.event.get():
@@ -412,15 +411,12 @@ class Game :
                                 enemy_units.remove(enemy)
                                 self.flip_display()
 
-                            has_acted = True
-                            selected_unit.is_selected = False
                         else:
                             print("Aucun ennemi à portée pour cette unité.")
-
-                        # Fin du tour après l'attaque
+                     # Fin du tour avec la touche ESPACE
+                    if event.key == pygame.K_SPACE:
                         has_acted = True
                         selected_unit.is_selected = False
-                        break
 
 
     
@@ -453,8 +449,14 @@ class Game :
 
             # Gère les tours des joueurs
             if current_turn == 'player1':
+                text = self.font.render('Tour du joueur 1', True, WHITE)
+                self.screen.blit(text, (game_width, 100))
+                self.draw_instructions_select_unit()
                 self.handle_unit_turn(self.player1_units, current_turn)
             else:
+                text = self.font.render('Tour du joueur 2', True, WHITE)
+                self.screen.blit(text, (game_width, 100))
+                self.draw_instructions_select_unit()
                 self.handle_unit_turn(self.player2_units, current_turn)
 
             # Nettoyer les unités mortes
