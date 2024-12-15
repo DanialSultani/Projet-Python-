@@ -157,8 +157,8 @@ def menu_parametres(screen):
 
     contenu_personnages = [
         {"nom": "Soldat", "image": "soldat.png", "description": "Vie: 6\nVitesse: 2\nPouvoir: Attaque infligeant 1 point de vie dans 8 cases.\nRapide et résistant."},
-        {"nom": "Médecin", "image": "medecin.png", "description": "Vie: 1\nVitesse: 3\nPouvoir: Guérison de 2 points de vie dans 8 cases.\nRapide et agile, mais fragile."},
-        {"nom": "Hélicoptère", "image": "helico.png", "description": "Vie: 2\nVitesse: 4\nPouvoir: Attaque infligeant 3 points de dégâts dans 3 cases.\nRapide mais vulnérable."},
+        {"nom": "Medecin", "image": "medecin.png", "description": "Vie: 1\nVitesse: 3\nPouvoir: Guérison de 2 points de vie dans 8 cases.\nRapide et agile, mais fragile."},
+        {"nom": "Helicoptere", "image": "helico.png", "description": "Vie: 2\nVitesse: 4\nPouvoir: Attaque infligeant 3 points de dégâts dans 3 cases.\nRapide mais vulnérable."},
         {"nom": "Tank", "image": "char.png", "description": "Vie: 6\nVitesse: 1\nPouvoir: Attaque infligeant 3 points de dégâts dans 2 cases.\nLent mais puissant."}
     ]
 
@@ -171,7 +171,7 @@ def menu_parametres(screen):
         {"nom": "Bonhomme de neige", "image": "bonhomme.png", "description": "Traversable mais bloque les projectiles."},
         {"nom": "Oasis", "image": "oasis.webp", "description": "Soigne les unités."},
         {"nom": "Puits", "image": "puit.png", "description": "Soigne les unités."},
-        {"nom": "Feu", "image": "feu.png", "description": "Soigne les unités."},
+        {"nom": "Feu", "image": "feu.png", "description": "Blesse les unités."},
         {"nom": "Glace", "image": "glace.png", "description": "Surface glissante "},
         {"nom": "Sapin", "image": "sapin.png", "description": "Pas traversable et bloque les balles."},
         {"nom": "Drapeau", "image": "flag.png", "description": "Capturez-le pour gagner."}

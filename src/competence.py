@@ -48,6 +48,17 @@ class Competence:
         if not self._est_a_portee(utilisateur, cibles):
             return f"{self.nom} échoue : cible hors de portée."
 
+        if self.zone_effet > 1:
+            print(f"{self.nom} affecte une zone de {self.zone_effet} cases.")
+            # Parcourir les cibles dans la zone d'effet
+            for cible in cibles:
+                if self._touche():
+                    self.appliquer_effet(utilisateur, cible)
+        else:
+            for cible in cibles:
+                if self._touche():
+                    self.appliquer_effet(utilisateur, cible)
+
         if self.type_competence == "attaque":
             for cible in cibles:
                 if self._touche():
@@ -89,6 +100,9 @@ class Competence:
         """
         import random
         return random.randint(1, 100) <= self.precision
+
+
+
     
 class GestionCompetences:
     def __init__(self):
@@ -106,6 +120,7 @@ class GestionCompetences:
         Récupère une compétence par son nom.
         """
         return self.competences.get(nom)
+    
 
 # Création de la gestion des compétences
 gestion_competences = GestionCompetences()

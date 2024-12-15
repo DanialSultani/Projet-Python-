@@ -304,6 +304,7 @@ class Game :
         """
         if 0 <= x < WIDTH // CELL_SIZE and 0 <= y < HEIGHT // CELL_SIZE:
             return self.grille[y][x]  # Accès direct à la case
+            print(f"Case à ({x}, {y}) : {self.grille[y][x].propriete}")
         return None  # Hors des limites de la grille
 
 

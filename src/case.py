@@ -73,12 +73,15 @@ class Case :
             "arbre": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "roche": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "dune": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "dune2": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "sapin": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "boue": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
 
             # Terrains traversables
             "herbe": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "sable": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "neige": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
-            "glace": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -1},
+            "glace": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": (-1)},
 
             # Terrains spéciaux
             "oasis": {"traversable": True, "bloque_balle": False, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 0},
@@ -91,14 +94,14 @@ class Case :
 
             # Objets interactifs
             "chameau": {"traversable": True, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 1},
-            "bonhomme_neige": {"traversable": True, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 1},
+            "bonhomme": {"traversable": True, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
 
             # Zones stratégiques
             "flag1": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "flag2": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
 
             # Zones bonus/malus
-            "puit": {"traversable": False, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -2},
+            "puit": {"traversable": False, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "oasis": {"traversable": True, "bloque_balle": False, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 0},
 
             # Terrain inconnu
@@ -109,53 +112,55 @@ class Case :
 
     def appliquer_effet(self, unite, screen):
         """
-        Applique l'effet de la case à une unité (soins, invisibilité, invincibilité, etc.).
+        Applique les effets de la case à une unité, incluant la modification de max_distance.
 
-        Paramètres
-        ----------
-        unite : Unit
-            L'unité affectée par l'effet.
-        screen : pygame.Surface
-            L'écran de jeu pour afficher des messages ou des effets.
+        :param unite: Unit
+            L'unité affectée par la case.
+        :param screen: pygame.Surface
+            L'écran du jeu pour afficher des informations (si nécessaire).
         """
-        if not self.effet["traversable"]:
+        if not self.effet.get("traversable", True):
             raise ValueError("Cette case ne peut pas être traversée !")
 
-        # Effets de soin
+        # Modification de max_distance via l'effet
+        if self.effet.get("boost_vitesse"):
+            boost = self.effet.get("boost_vitesse", 0)  # Utilise 0 si "max_distance" n'est pas présent
+            unite.distance_remaining = max(1, unite.distance_remaining + boost)  # Assure une valeur minimale de 1
+            print(f"{unite.name}: distance restante modifiée à {unite.distance_remaining}.")
+
+        # Appliquer d'autres effets
         if self.effet.get("soigne"):
-            unite.health = min(unite.max_health, unite.health + 2)  # Soigne sans dépasser le maximum
-            print(f"{unite.name} a été soigné à {unite.health}/{unite.max_health} points de vie.")
+            soin = self.effet.get("soigne", 2)
+            unite.health = min(unite.max_health, unite.health + soin)
+            print(f"{unite.name} a été soigné : {unite.health}/{unite.max_health} points de vie.")
 
-        # Effets de vitesse (positifs et négatifs)
-        if self.effet.get("boost_vitesse") != 0:
-            unite.vitesse += self.effet["boost_vitesse"]
-            print(f"Vitesse de {unite.name} modifiée : {unite.vitesse}")
-
-        # Effets d'état (invisibilité, invincibilité)
-        if self.effet.get("invisible"):
+        if self.effet.get("invisible", False):
             unite.invisible = True
             print(f"{unite.name} est maintenant invisible.")
         else:
             unite.invisible = False
 
-        if self.effet.get("invincible"):
+        if self.effet.get("invincible", False):
             unite.invincible = True
             print(f"{unite.name} est maintenant invincible.")
         else:
             unite.invincible = False
 
-        # Effets de dégât feu
+        # Effets spécifiques à certaines propriétés (feu, glace, etc.)
         if self.propriete == "feu":
-            unite.health = max(0, unite.health - 1)  # Inflige des dégâts
-            print(f"{unite.name} a subi des dégâts du feu. Vie restante : {unite.health}/{unite.max_health}.")
-        if self.propriete == "glace":
+            degats = self.effet.get("degats_feu", 1)
+            unite.health = max(0, unite.health - degats)
+            print(f"{unite.name} subit {degats} dégâts à cause du feu. Vie restante : {unite.health}/{unite.max_health}.")
+        elif self.propriete == "glace":
             print(f"{unite.name} est ralenti par la glace.")
 
-        # Vérification de victoire (drapeaux)
+        # Vérification de victoire si la case est un drapeau
         if self.propriete == "flag1" and unite.team == "player2":
             show_victory_screen(screen, "enemy")
         elif self.propriete == "flag2" and unite.team == "player1":
             show_victory_screen(screen, "player")
+
+
 
 
 

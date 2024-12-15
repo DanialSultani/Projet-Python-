@@ -102,10 +102,12 @@ class Unit(ABC):
 
         new_x, new_y = self.x + dx, self.y + dy
 
-        # Vérifie si la case cible est valide et traversable
-        target_case = game.get_case_at(new_x, new_y)
-        if not target_case or not target_case.effet.get("traversable", True):
-            print(f"Déplacement bloqué : case non traversable à ({new_x}, {new_y}).")
+        # Récupérer les cases accessibles
+        cases_accessibles = self.get_deplacement_autorise(game)
+
+        # Vérifie si la case cible est valide ET dans les cases accessibles
+        if (new_x, new_y) not in cases_accessibles:
+            print(f"Déplacement bloqué : case non autorisée ou non traversable à ({new_x}, {new_y}).")
             return
 
         # Mettre à jour la position et appliquer les effets
@@ -114,7 +116,10 @@ class Unit(ABC):
         print(f"{self.name} déplacé à ({self.x}, {self.y}). Distance restante : {self.distance_remaining}.")
 
         # Appliquer les effets de la case après le déplacement
-        target_case.appliquer_effet(self, game.screen)
+        target_case = game.get_case_at(self.x, self.y)
+        if target_case:
+            target_case.appliquer_effet(self, game.screen)
+
 
 
 
