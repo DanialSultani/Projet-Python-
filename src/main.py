@@ -4,6 +4,7 @@ from unit import *
 from case import *
 from interface import * 
 
+
 # Variable globale pour verrouiller les appels à choose_map
 choose_map_called = False
 
@@ -16,6 +17,8 @@ def main():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Flags of Glory")
     
+
+
     # Charger les fresques
     try:
         fresque = [
@@ -50,6 +53,7 @@ def main():
     
     # Afficher immédiatement la carte sélectionnée
     game.flip_display()
+    
 
     # Boucle principale
     clock = pygame.time.Clock()
@@ -64,7 +68,7 @@ def main():
         # Vérifier les conditions de victoire
         if game.check_victory():  # Ajout de la vérification des conditions de victoire
             running = False  # Arrêter la boucle si une équipe a gagné
-        clock.tick(FPS)
+
 
 def main_menu(screen, fresque):
     """Affiche le menu principal avec les fresques comme fond."""

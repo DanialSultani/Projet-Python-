@@ -24,7 +24,7 @@ def show_victory_screen(screen, winner):
     if winner == "draw":
         message = "Match nul !"
     else:
-        message = f"Victoire du {'Joueur 1' if winner == 'player' else 'Joueur 2'} !"
+        message = f"Victoire du {'Joueur 1' if winner == 'player1' else 'Joueur 2'} !"
     text = font.render(message, True, RED)
     text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
     screen.blit(text, text_rect)

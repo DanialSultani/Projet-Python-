@@ -59,7 +59,7 @@ class Game :
                             Tank(11, 12, 'player2')]
         
         self.start_time = pygame.time.get_ticks()  # Enregistre le temps de départ
-        self.time_limit = 300000  # Par exemple, 5 minutes = 300000 ms (5 * 60 * 1000)
+        self.time_limit = 200000 # Par exemple, 5 minutes = 300000 ms (5 * 60 * 1000)
         
         # Liste des maps avec un terrain spécifique  
         self.maps = [
@@ -84,7 +84,7 @@ class Game :
             { # Map 2 : Desert
                 "terrain": "images/terrain_sables.png",
                 "cases": [
-                    Case(0, 0, 'dune'), Case(3, 0, 'dune'), Case(6, 0, 'dune'), Case(9, 0, 'dune'),Case(12, 0, 'dune'),Case(15, 0, 'dune'),Case(17, 0, 'dune'),Case(20, 0, 'dune'),Case(23, 0, 'dune'),Case(25, 0, 'dune'),
+                    Case(0, 0, 'dune'), Case(3, 0, 'dune'), Case(6, 0, 'dune'), Case(9, 0, 'dune'),Case(12, 0, 'dune'),Case(15, 0, 'dune'),Case(17, 0, 'dune'),Case(20, 0, 'dune'),Case(23, 0, 'dune'),Case(25, 0 , 'dune'),
                     Case(0, 1, 'flag1'), Case(22, 14, 'flag2'),
                     Case(9, 3, 'dune2'), Case(21, 2, 'dune2'),Case(15, 5, 'dune2'),Case(17, 9, 'dune2'),Case(1, 13, 'dune2'),Case(11, 13, 'dune2'),Case(8, 9, 'dune2'), Case(1, 7, 'dune2'),
                     Case(5, 12, 'tente'), Case(5, 5, 'tente'), Case(15, 3, 'tente'),Case(21, 6, 'tente'),Case(11, 7, 'tente'),
@@ -112,11 +112,10 @@ class Game :
 
         # Configure la carte sélectionnée
         self.current_map = self.maps[selected_map_index]
-        self.initialiser_grille()
 
         # Initialisation de la grille avec toutes les cases traversables
         self.initialiser_grille()
-        self.verifier_grille()
+        #self.verifier_grille()
         self.font = pygame.font.Font("images/GameBoy.ttf", 10)
 
     def initialiser_grille(self):
@@ -191,16 +190,7 @@ class Game :
                 unit.reset_effects()
 
          
-    def all_units_done(self, current_turn):
-        """
-        Vérifie si toutes les unités du joueur ou de l'ennemi ont terminé leurs actions.
-        current_turn : str
-            Le tour actuel, soit 'player' soit 'enemy'.
-        Retourne :
-            bool : True si toutes les unités ont terminé leurs actions, False sinon.
-        """
-        units = self.player1_units if current_turn == 'player1' else self.player2_units
-        return all(unit.distance_remaining == 0 for unit in units)  
+
         
     def check_victory(self):
         """
@@ -234,19 +224,6 @@ class Game :
 
         # Aucune condition de victoire atteinte
         return False
-
-    def draw_timer(self):
-        """
-        Affiche le temps restant sur l'écran de jeu.
-        """
-        time_remaining = self.get_time_remaining() // 1000  # Convertir en secondes
-        minutes = time_remaining // 60
-        seconds = time_remaining % 60
-        timer_text = f"Temps restant : {minutes:02}:{seconds:02}"
-
-        font = pygame.font.Font(None, 36)
-        text = font.render(timer_text, True, (255, 255, 255))  # Blanc
-        self.screen.blit(text, (10, 10))  # Affiche en haut à gauche
 
     def flip_display(self):
         """Optimise l'affichage en dessinant tout sur une seule surface avant de mettre à jour l'écran."""
@@ -292,7 +269,31 @@ class Game :
             sidebar_surface.fill((0, 0, 0))  # Noir en cas d'erreur
 
         self.screen.blit(sidebar_surface, (game_width, 0))
+        # Texte des instructions
+        instructions = [
+            "Selectionnez une unite :",
+            "Z - Soldat",
+            "Q - Medecin",
+            "S - Helico",
+            "D - Tank",
+            "",
+            "",
+            "",
+            "Selectionnez une compétence :",
+            "1- Attaque",
+            "2 - Defense",            
+        ]
 
+        # Dessiner chaque ligne d'instruction
+        font = pygame.font.Font("images/GameBoy.ttf", 10)
+        y = 150
+        for line in instructions:
+                text = font.render(line, True, WHITE)
+                self.screen.blit(text, (game_width, y))
+                y += 30
+
+
+        self.draw_timer
         # Rafraîchir l'écran UNE SEULE FOIS
         pygame.display.flip()
 
@@ -307,36 +308,6 @@ class Game :
         return None  # Hors des limites de la grille
 
 
-    def draw_instructions_select_unit(self):
-        """
-        Dessine les instructions pour sélectionner une unité.
-        """
-        # Effacer la zone de la bande latérale
-        game_width = int(WIDTH * 0.85)  # 3/4 de la largeur
-        sidebar_width = WIDTH - game_width  # 1/4 de la largeur
-        sidebar_surface = pygame.Surface((sidebar_width, HEIGHT))
-        back_lat= pygame.image.load("images/back_lateral.png")
-        back_lat= pygame.transform.scale(back_lat, (3*sidebar_width , HEIGHT))
-        sidebar_surface.blit(back_lat,(-200, 0))  # Fond sombre pour le panneau
-
-        # Texte des instructions
-        instructions = [
-            "Selectionnez une unite :",
-            "Z - Soldat",
-            "Q - Medecin",
-            "S - Helico",
-            "D - Tank",
-        ]
-
-        # Dessiner chaque ligne d'instruction
-        font = pygame.font.Font("images/GameBoy.ttf", 10)
-        y = 150
-        for line in instructions:
-                text = font.render(line, True, WHITE)
-                self.screen.blit(text, (game_width, y))
-                y += 30
-
-    
 
     def handle_unit_turn(self, player_units, current_turn):
         """
@@ -384,41 +355,28 @@ class Game :
                         self.flip_display()
 
                     # Utilisation des compétences
-                    elif selected_unit and event.key in [pygame.K_1, pygame.K_2, pygame.K_3]:
-                        competence_index = event.key - pygame.K_1
-                        if competence_index < len(selected_unit.competences):
-                            competence = selected_unit.competences[competence_index]
-                            self.utiliser_competence(selected_unit, competence, player_units)
-                            self.flip_display()
+                    elif selected_unit and event.key in [pygame.K_a, pygame.K_e]:
+                        competence_index = [pygame.K_a, pygame.K_e].index(event.key)     
+                        print(competence_index)
+                        if competence_index < len(selected_unit.competence):
+                            print(competence_index)               
+                            competence = selected_unit.competence[competence_index]
+                            print(competence)
+                            print(self.player1_units)
+                            print(self.player2_units)
+                            if current_turn == 'player1':
+                                
+                                competence.use(selected_unit, self.player1_units, self.player2_units)
+                            else:
+                                competence.use(selected_unit, self.player2_units, self.player1_units)
 
-                    # Attaque de l'unité sélectionnée
-                    elif selected_unit and event.key == pygame.K_a:
-                        enemy_units = self.player2_units if current_turn == 'player1' else self.player1_units
-                        ennemis_a_portee = [
-                            enemy for enemy in enemy_units
-                            if abs(selected_unit.x - enemy.x) + abs(selected_unit.y - enemy.y) <= selected_unit.attack_range
-                        ]
-
-                        if ennemis_a_portee:
-                            # Attaquer le premier ennemi trouvé
-                            enemy = ennemis_a_portee[0]
-                            selected_unit.attaquer(enemy)
-                            print(f"{selected_unit.name} attaque {enemy.name} !")
-
-                            # Si l'ennemi est éliminé
-                            if enemy.health <= 0:
-                                print(f"{enemy.name} est éliminé !")
-                                enemy_units.remove(enemy)
-                                self.flip_display()
-
-                        else:
-                            print("Aucun ennemi à portée pour cette unité.")
+                            
                      # Fin du tour avec la touche ESPACE
                     if event.key == pygame.K_SPACE:
                         has_acted = True
-                        selected_unit.is_selected = False
+                        selected_unit= False
 
-
+    
     
     def utiliser_competence(self, unit, competence, player_units):
         """
@@ -451,17 +409,16 @@ class Game :
             if current_turn == 'player1':
                 text = self.font.render('Tour du joueur 1', True, WHITE)
                 self.screen.blit(text, (game_width, 100))
-                self.draw_instructions_select_unit()
                 self.handle_unit_turn(self.player1_units, current_turn)
             else:
                 text = self.font.render('Tour du joueur 2', True, WHITE)
                 self.screen.blit(text, (game_width, 100))
-                self.draw_instructions_select_unit()
                 self.handle_unit_turn(self.player2_units, current_turn)
 
             # Nettoyer les unités mortes
             self.player1_units = [unit for unit in self.player1_units if unit.health > 0]
             self.player2_units = [unit for unit in self.player2_units if unit.health > 0]
+            self.check_victory()
 
             # Alterner les tours
             current_turn = 'player2' if current_turn == 'player1' else 'player1'
@@ -471,4 +428,87 @@ class Game :
             clock.tick(FPS)
 
 
-        
+    def select_unite(self, player_units, current_turn):
+        """
+        Gère le tour d'une unité. Chaque unité peut se déplacer ou attaquer.
+
+        Parameters:
+        ----------
+        player_units : list
+            La liste des unités du joueur en cours.
+        current_turn : str
+            Le joueur en cours ('player1' ou 'player2').
+        """
+        # Réinitialisation des distances des unités au début du tour
+        for unit in player_units:
+            unit.reset_distance()
+
+        selected_unit = None
+        has_acted = False
+
+        while not has_acted:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+
+                if event.type == pygame.KEYDOWN:
+                    # Sélection de l'unité
+                    if event.key in [pygame.K_z, pygame.K_q, pygame.K_s, pygame.K_d]:
+                        unit_index = {'z': 0, 'q': 1, 's': 2, 'd': 3}.get(event.unicode, -1)
+                        selected_unit = player_units[unit_index]
+                        print(f"{selected_unit.name} est sélectionné.")
+                        self.flip_display()
+
+                    # Déplacement de l'unité sélectionnée
+                    if selected_unit and event.key in [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT]:
+                        directions = {
+                            pygame.K_UP: "up",
+                            pygame.K_DOWN: "down",
+                            pygame.K_LEFT: "left",
+                            pygame.K_RIGHT: "right",
+                        }
+                        selected_unit.move(directions[event.key], self)
+                        pygame.time.delay(100)  # Empêche les déplacements trop rapides
+                        self.flip_display()
+                        has_acted = True
+
+
+                    # Utilisation des compétences
+                    elif selected_unit and event.key in [pygame.K_1, pygame.K_2]:
+                        competence_index = event.key - pygame.K_1
+                        if competence_index < len(selected_unit.competences):
+                            
+                            competence = selected_unit.competences[competence_index]
+                            alie = self.player1_units if current_turn == 'player1' else self.player2_units
+                            ennemis = self.player2_units if current_turn == 'player1' else self.player1_units
+                            competence.use(selected_unit, alie, ennemis)
+
+
+                    # Attaque de l'unité sélectionnée Attaque Amelioration 
+                    elif selected_unit and event.key == pygame.K_a:
+                        enemy_units = self.player2_units if current_turn == 'player1' else self.player1_units
+                        ennemis_a_portee = [
+                            enemy for enemy in enemy_units
+                            if abs(selected_unit.x - enemy.x) + abs(selected_unit.y - enemy.y) <= selected_unit.attack_range
+                        ]
+
+                        if ennemis_a_portee:
+                            # Attaquer le premier ennemi trouvé
+                            enemy = ennemis_a_portee[0]
+                            selected_unit.attaquer(enemy)
+                            print(f"{selected_unit.name} attaque {enemy.name} !")
+
+                            # Si l'ennemi est éliminé
+                            if enemy.health <= 0:
+                                print(f"{enemy.name} est éliminé !")
+                                enemy_units.remove(enemy)
+                                self.flip_display()
+
+                        else:
+                            print("Aucun ennemi à portée pour cette unité.")
+                            
+                     # Fin du tour avec la touche ESPACE
+                    if event.key == pygame.K_SPACE:
+                        has_acted = True
+                        selected_unit= False   
