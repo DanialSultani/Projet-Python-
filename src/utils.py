@@ -50,5 +50,4 @@ def show_victory_screen(screen, winner):
                 pygame.quit()
                 exit()
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:  # Retour au jeu
-                    return
+                return False

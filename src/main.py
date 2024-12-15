@@ -54,7 +54,7 @@ def main():
     game = Game(screen,selected_map_index)
     
     # Afficher immédiatement la carte sélectionnée
-    game.flip_display()
+    game.update()
     
 
     # Boucle principale
