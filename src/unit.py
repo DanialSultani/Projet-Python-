@@ -248,7 +248,7 @@ class Unit(ABC):
 
 class Tank(Unit):
     name = "char"
-    max_distance = 100 # Distance maximale (2 cases)
+    max_distance = 5 # Distance maximale (2 cases)
     max_health = 6
     attack_power = 3  # Pouvoir d'attaque
     attack_range = 2
@@ -260,7 +260,7 @@ class Tank(Unit):
 class Helico(Unit): 
     name = "helico"
     # Initialisation des capacités 
-    max_distance = 50  # Distance maximale (4 cases)
+    max_distance = 10  # Distance maximale (4 cases)
     max_health = 3
     attack_power = 3  # Pouvoir d'attaque
     attack_range = 3
@@ -296,7 +296,7 @@ class Soldat(Unit):
     def __init__(self, x, y, team):
         super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance,self.competence)
 
-#if __name__ == "__main__":
-#    tank = Tank(2, 3, "player1", "char", 3, 6)
-#    print(tank.name)  # char
+if __name__ == "__main__":
+    tank = Tank(2, 3, "player1", "char", 3, 6)
+    print(tank.name)  # char
     
