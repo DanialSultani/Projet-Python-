@@ -7,6 +7,7 @@ GRID_SIZE = 16
 CELL_SIZE = 50
 WIDTH = (GRID_SIZE * CELL_SIZE)+600
 game_width = int(WIDTH * 0.85)  # 3/4 de la largeur
+game_width = int(WIDTH * 0.85)  # 3/4 de la largeur
 HEIGHT = GRID_SIZE * CELL_SIZE
 FPS = 30
 WHITE = (255, 255, 255)
@@ -73,6 +74,7 @@ class Unit(ABC):
         self.distance_remaining = 0  # Distance que l'unité peut encore parcourir
         
     def reset_distance(self):
+        """Réinitialise la distance restante au maximum a chaque tour."""
         """Réinitialise la distance restante au maximum a chaque tour."""
         self.distance_remaining = self.max_distance
 
@@ -246,10 +248,10 @@ class Unit(ABC):
 
 class Tank(Unit):
     name = "char"
-    max_distance = 100 # Distance maximale (2 cases)
-    max_health = 6
+    max_distance = 3 # Distance maximale (2 cases)
+    max_health = 12
     attack_power = 3  # Pouvoir d'attaque
-    attack_range = 2
+    attack_range = 3
     competence = [Canon(),Booster()]
     def __init__(self, x, y, team):
         super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance,self.competence)
@@ -270,8 +272,8 @@ class Helico(Unit):
 class Medecin(Unit):
     name = "medecin"
     # Initialisation des capacités 
-    max_distance = 2  # Distance de déplacement
-    health = 2
+    max_distance = 4  # Distance de déplacement
+    health = 5
     max_health = 2
     heal_power = 2 
     attack_power = 3  # Pouvoir d'attaque
@@ -285,7 +287,7 @@ class Soldat(Unit):
     name = "soldat"
     # Initialisation des capacités 
     max_distance = 2 # Distance maximale 
-    health = 6
+    health = 8
     max_health = 6
     attack_power = 1  # Pouvoir d'attaque
     attack_range = 8

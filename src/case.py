@@ -1,5 +1,4 @@
 import pygame
-import random
 from utils import show_victory_screen
 
 # Constantes pour l'adaptation dynamique

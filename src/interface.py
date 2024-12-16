@@ -177,16 +177,19 @@ class Game :
         """
         
         self.screen = screen
+        self.CELL_SIZE = 50  # Taille d'une cellule
+        self.GRID_WIDTH = screen.get_width() // self.CELL_SIZE  # Largeur en cellules
+        self.GRID_HEIGHT = screen.get_height() // self.CELL_SIZE  # Hauteur en cellules
 
         self.player1_units = [Soldat(2, 2,  'player1'),
                              Medecin(3, 1, 'player1'),
                              Helico(0, 3, 'player1'),
-                             Tank(10, 10, 'player1')]
+                             Tank(1, 0, 'player1')]
 
         self.player2_units = [Soldat(20, 12, 'player2'),
                             Medecin(22, 11, 'player2'),
                             Helico(19, 14, 'player2'),
-                            Tank(11, 12, 'player2')]
+                            Tank(21, 12, 'player2')]
         
         self.start_time = pygame.time.get_ticks()  # Enregistre le temps de départ
         self.time_limit = 200000 # Par exemple, 5 minutes = 300000 ms (5 * 60 * 1000)
@@ -272,6 +275,7 @@ class Game :
 
 
 
+
     def get_case_at(self, x, y):
         """
         Retourne la case à une position donnée ou None si elle est hors limites.
@@ -295,13 +299,14 @@ class Game :
         # Réinitialisation des distances des unités au début du tour
         for unit in player_units:
             unit.reset_distance()
-
         selected_unit = None
         has_acted = False
         selected_competence = None
 
         while not has_acted:
+
             for event in pygame.event.get():
+                
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()

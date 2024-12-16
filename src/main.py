@@ -125,8 +125,10 @@ def main_menu(screen, fresque):
                 return False  # Quitter le jeu
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
+                    sound_effects.sounds['click'].play()
                     selected_option = (selected_option - 1) % len(menu_options)
                 elif event.key == pygame.K_DOWN:
+                    sound_effects.sounds['click'].play()
                     selected_option = (selected_option + 1) % len(menu_options)
                 elif event.key == pygame.K_RETURN:
                     if selected_option == 0:  # Play
@@ -145,7 +147,7 @@ def menu_parametres(screen):
     """Affiche une fenêtre avec plusieurs onglets dans le menu des paramètres."""
     # Charger l'image de fond
     try:
-        fond = pygame.image.load("back.png")
+        fond = pygame.image.load("images/back.png")
         fond = pygame.transform.scale(fond, (WIDTH, HEIGHT))  # Ajuste à la taille de l'écran
     except pygame.error as e:
         print(f"Erreur lors du chargement de l'image de fond : {e}")
@@ -167,26 +169,26 @@ def menu_parametres(screen):
     ]
 
     contenu_personnages = [
-        {"nom": "Soldat", "image": "soldat.png", "description": "Vie: 6\nVitesse: 2\nPouvoir: Attaque infligeant 1 point de vie dans 8 cases.\nRapide et résistant."},
-        {"nom": "Médecin", "image": "medecin.png", "description": "Vie: 1\nVitesse: 3\nPouvoir: Guérison de 2 points de vie dans 8 cases.\nRapide et agile, mais fragile."},
-        {"nom": "Hélicoptère", "image": "helico.png", "description": "Vie: 2\nVitesse: 4\nPouvoir: Attaque infligeant 3 points de dégâts dans 3 cases.\nRapide mais vulnérable."},
-        {"nom": "Tank", "image": "char.png", "description": "Vie: 6\nVitesse: 1\nPouvoir: Attaque infligeant 3 points de dégâts dans 2 cases.\nLent mais puissant."}
-    ]
+        {"nom": "Soldat", "image": "images/soldat.png", "description": "Vie: 6\nVitesse: 2\nPouvoir: Attaque infligeant 1 point de vie dans 8 cases.\nRapide et résistant."},
+        {"nom": "Médecin", "image": "images/medecin.png", "description": "Vie: 1\nVitesse: 3\nPouvoir: Guérison de 2 points de vie dans 8 cases.\nRapide et agile, mais fragile."},
+        {"nom": "Hélicoptère", "image": "images/helico.png", "description": "Vie: 2\nVitesse: 4\nPouvoir: Attaque infligeant 3 points de dégâts dans 3 cases.\nRapide mais vulnérable."},
+        {"nom": "Tank", "image": "images/char.png", "description": "Vie: 6\nVitesse: 1\nPouvoir: Attaque infligeant 3 points de dégâts dans 2 cases.\nLent mais puissant."}
+        ]
 
     contenu_cases = [
-        {"nom": "Arbre", "image": "arbre.png", "description": "Pas traversable et bloque les balles."},
-        {"nom": "Mur", "image": "mur.png", "description": "Bloquant les déplacements et les attaques."},
-        {"nom": "Buisson", "image": "buisson.png", "description": "Rend les unités invisibles"},
-        {"nom": "Dune", "image": "dune2.png", "description": "Pas traversable et bloque les balles."},
-        {"nom": "Chameau", "image": "chameau.png", "description": "Augmente la vitesse des unités."},
-        {"nom": "Bonhomme de neige", "image": "bonhomme.png", "description": "Traversable mais bloque les projectiles."},
-        {"nom": "Oasis", "image": "oasis.webp", "description": "Soigne les unités."},
-        {"nom": "Puits", "image": "puit.png", "description": "Soigne les unités."},
-        {"nom": "Feu", "image": "feu.png", "description": "Soigne les unités."},
-        {"nom": "Glace", "image": "glace.png", "description": "Surface glissante "},
-        {"nom": "Sapin", "image": "sapin.png", "description": "Pas traversable et bloque les balles."},
-        {"nom": "Drapeau", "image": "flag.png", "description": "Capturez-le pour gagner."}
-    ]
+       {"nom": "Arbre", "image": "images/arbre.png", "description": "Pas traversable et bloque les balles."},
+        {"nom": "Mur", "image": "images/mur.png", "description": "Bloquant les déplacements et les attaques."},
+        {"nom": "Buisson", "image": "images/buisson.png", "description": "Rend les unités invisibles"},
+        {"nom": "Dune", "image": "images/dune2.png", "description": "Pas traversable et bloque les balles."},
+        {"nom": "Chameau", "image": "images/chameau.png", "description": "Augmente la vitesse des unités."},
+        {"nom": "Bonhomme de neige", "image": "images/bonhomme.png", "description": "Traversable mais bloque les projectiles."},
+        {"nom": "Oasis", "image": "images/oasis.webp", "description": "Soigne les unités."},
+        {"nom": "Puits", "image": "images/puit.png", "description": "Soigne les unités."},
+        {"nom": "Feu", "image": "images/feu.png", "description": "Soigne les unités."},
+        {"nom": "Glace", "image": "images/glace.jpg", "description": "Surface glissante "},
+        {"nom": "Sapin", "image": "images/sapin.png", "description": "Pas traversable et bloque les balles."},
+        {"nom": "Drapeau", "image": "images/flag1.png", "description": "Capturez-le pour gagner."}
+        ]
 
     # Charger les images des personnages
     try:
@@ -207,7 +209,7 @@ def menu_parametres(screen):
         return
 
     # Police
-    police_principale = pygame.font.Font("GameBoy.ttf", 20)
+    police_principale = pygame.font.Font("images/GameBoy.ttf", 20)
     police_secondaire = pygame.font.SysFont("Times New Roman", 20)
 
     en_cours = True
@@ -220,6 +222,8 @@ def menu_parametres(screen):
             texte = police_principale.render(onglet, True, couleur)
             texte_rect = texte.get_rect(center=(WIDTH // len(onglets) * (i + 0.5), 40))
             screen.blit(texte, texte_rect)
+            sound_effects.sounds['click'].play()
+
 
         # Afficher le contenu selon l'onglet sélectionné
         if onglet_courant == 0:  # Onglet "But du jeu"
@@ -362,6 +366,8 @@ def choose_map(screen):
                     sound_effects.sounds['click'].play()
                     afficher_map_selectionnee(screen, maps[selected_index])  # Affiche immédiatement la carte
                     map_selected = True  # Quitter la boucle
+                    sound_effects.sounds['click'].play()
+
                     # Diminue le son 
                     sound_effects.set_volume('fond', 0.1)
         pygame.display.flip()
