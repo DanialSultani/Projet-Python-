@@ -52,8 +52,9 @@
 ## 🕹️ Comment jouer ?
 
 1. Le jeu se joue à **2 joueurs**. 👥
-2. Les joueurs jouent à tour de rôle :
-   - 🖱️ **Sélectionnez** un personnage grace au touche zqsd.
+2. Chaque joueur choisit une équipe parmi les options : **défensive** 🛡️, **offensive** ⚔️, ou **neutre** ⚖️.
+3. Les joueurs jouent à tour de rôle :
+   - 🖱️ **Sélectionnez** un personnage avec la souris.
    - ⌨️ **Déplacez-le** avec le clavier.
    - À la fin de chaque déplacement, si un ennemi est à proximité, utilisez un **pouvoir d’attaque**.
 

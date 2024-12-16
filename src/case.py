@@ -52,7 +52,7 @@ class Case :
         self.y = y
         self.propriete = propriete
         self.effet = self.definir_effet(propriete)
-
+    
     def definir_effet(self, propriete):
         """
         Définit les effets associés au type de la case.
@@ -72,12 +72,15 @@ class Case :
             "arbre": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "roche": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "dune": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "dune2": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "sapin": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
+            "boue": {"traversable": False, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
 
             # Terrains traversables
             "herbe": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "sable": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "neige": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
-            "glace": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -1},
+            "glace": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": (-1)},
 
             # Terrains spéciaux
             "oasis": {"traversable": True, "bloque_balle": False, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 0},
@@ -90,14 +93,14 @@ class Case :
 
             # Objets interactifs
             "chameau": {"traversable": True, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 1},
-            "bonhomme_neige": {"traversable": True, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 1},
+            "bonhomme": {"traversable": True, "bloque_balle": True, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
 
             # Zones stratégiques
             "flag1": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "flag2": {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0},
 
             # Zones bonus/malus
-            "puit": {"traversable": False, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": -2},
+            "puit": {"traversable": True, "bloque_balle": False, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 0},
             "oasis": {"traversable": True, "bloque_balle": False, "soigne": True, "invisible": False, "invincible": False, "boost_vitesse": 0},
 
             # Terrain inconnu
@@ -105,33 +108,60 @@ class Case :
         }
         return effets.get(propriete, {"traversable": True, "bloque_balle": False, "soigne": False, "invisible": False, "invincible": False, "boost_vitesse": 0})
 
+
     def appliquer_effet(self, unite, screen):
         """
-        Applique l'effet de la case à une unité (soins, invisibilité, invincibilité, etc.).
+        Applique les effets de la case à une unité, incluant la modification de max_distance.
 
-        Paramètres
-        ----------
-        unite : Unit
-            L'unité affectée par l'effet.
-        screen : pygame.Surface
-            L'écran de jeu pour afficher des messages ou des effets.
+        :param unite: Unit
+            L'unité affectée par la case.
+        :param screen: pygame.Surface
+            L'écran du jeu pour afficher des informations (si nécessaire).
         """
-        if not self.effet["traversable"]:
+        if not self.effet.get("traversable", True):
             raise ValueError("Cette case ne peut pas être traversée !")
 
-        # Appliquer les effets si disponibles
-        if self.effet["soigne"]:
-            unite.vie = min(unite.vie_max, unite.vie + 2)  # Soigne sans dépasser le maximum
-        if self.effet["boost_vitesse"] > 0:
-            unite.vitesse += self.effet["boost_vitesse"]
-        unite.invisible = self.effet["invisible"]
-        unite.invincible = self.effet["invincible"]
+        # Modification de max_distance via l'effet
+        if self.effet.get("boost_vitesse"):
+            boost = self.effet.get("boost_vitesse", 0)  # Utilise 0 si "max_distance" n'est pas présent
+            unite.distance_remaining = max(1, unite.distance_remaining + boost)  # Assure une valeur minimale de 1
+            print(f"{unite.name}: distance restante modifiée à {unite.distance_remaining}.")
 
-        # Vérification de victoire
-        if self.propriete == "flag1" and unite.team == "enemy":
+        # Appliquer d'autres effets
+        if self.effet.get("soigne"):
+            soin = self.effet.get("soigne", 2)
+            unite.health = min(unite.max_health, unite.health + soin)
+            print(f"{unite.name} a été soigné : {unite.health}/{unite.max_health} points de vie.")
+
+        if self.effet.get("invisible", False):
+            unite.invisible = True
+            print(f"{unite.name} est maintenant invisible.")
+        else:
+            unite.invisible = False
+
+        if self.effet.get("invincible", False):
+            unite.invincible = True
+            print(f"{unite.name} est maintenant invincible.")
+        else:
+            unite.invincible = False
+
+        # Effets spécifiques à certaines propriétés (feu, glace, etc.)
+        if self.propriete == "feu":
+            degats = self.effet.get("degats_feu", 1)
+            unite.health = max(0, unite.health - degats)
+            print(f"{unite.name} subit {degats} dégâts à cause du feu. Vie restante : {unite.health}/{unite.max_health}.")
+        elif self.propriete == "glace":
+            print(f"{unite.name} est ralenti par la glace.")
+
+        # Vérification de victoire si la case est un drapeau
+        if self.propriete == "flag1" and unite.team == "player2":
             show_victory_screen(screen, "enemy")
-        elif self.propriete == "flag2" and unite.team == "player":
+        elif self.propriete == "flag2" and unite.team == "player1":
             show_victory_screen(screen, "player")
+
+
+
+
 
     def bloque_balle(self):
         """
@@ -152,7 +182,7 @@ class Case :
             flag_player1 = pygame.transform.scale(flag_player1,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(flag_player1, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
 
         # Afficher du drapeau du joueur 2 
         elif self.propriete == 'flag2':
@@ -160,7 +190,7 @@ class Case :
             flag_player2 = pygame.transform.scale(flag_player2,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(flag_player2, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
 
         # Map foret
         # Afficher les murs
@@ -169,7 +199,7 @@ class Case :
             mur = pygame.transform.scale(mur,  (CELL_SIZE, CELL_SIZE))  
             screen.blit(mur, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
 
         # Afficher les tronc
         elif self.propriete == 'tronc':
@@ -177,7 +207,7 @@ class Case :
             tronc = pygame.transform.scale(tronc,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(tronc, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
 
         # Afficher les buisson
         elif self.propriete == 'buisson':
@@ -185,7 +215,7 @@ class Case :
             buisson = pygame.transform.scale(buisson,  (5*CELL_SIZE, 3*CELL_SIZE))  
             screen.blit(buisson, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
 
         # Afficher les arbres
         elif self.propriete == 'arbre':
@@ -193,7 +223,7 @@ class Case :
             arbre = pygame.transform.scale(arbre,  (3*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(arbre, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
 
         # Afficher la boue
         elif self.propriete == 'boue':
@@ -201,7 +231,7 @@ class Case :
             boue = pygame.transform.scale(boue,  (8*CELL_SIZE, 5*CELL_SIZE))  
             screen.blit(boue, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
 
         # Afficher la montagne
         elif self.propriete == 'brin':
@@ -209,7 +239,7 @@ class Case :
             brin= pygame.transform.scale(brin,  (CELL_SIZE, CELL_SIZE))  
             screen.blit(brin, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
 
         # Afficher le puit
         elif self.propriete == 'puit':
@@ -217,7 +247,7 @@ class Case :
             puit= pygame.transform.scale(puit,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(puit, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
 
         # Map desert
         # Afficher les chameaux
@@ -226,39 +256,39 @@ class Case :
             chameau = pygame.transform.scale(chameau,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(chameau, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
 
         # Afficher les dunes
         elif self.propriete == 'dune2':
             dune = pygame.image.load("images/dune2.png")
-            dune = pygame.transform.scale(dune,  (3*CELL_SIZE, 2*CELL_SIZE))  
+            dune = pygame.transform.scale(dune,  (3*CELL_SIZE, 3*CELL_SIZE))  
             screen.blit(dune, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
 
         elif self.propriete == 'tente':
             tente = pygame.image.load("images/tente.png")
-            tente = pygame.transform.scale(tente,  (6*CELL_SIZE, 3*CELL_SIZE))  
+            tente = pygame.transform.scale(tente,  (4*CELL_SIZE, 2.5*CELL_SIZE))  
             screen.blit(tente, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
 
         # Afficher les oasis
         elif self.propriete == 'oasis':
             palmier = pygame.image.load("images/oasis.webp")
-            palmier = pygame.transform.scale(palmier,  (3*CELL_SIZE, 3*CELL_SIZE))  
+            palmier = pygame.transform.scale(palmier,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(palmier, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
         
         
         # Afficher les montagnes
         elif self.propriete == 'dune':
             dune = pygame.image.load("images/dune.png")
-            dune = pygame.transform.scale(dune,  (5*CELL_SIZE, 3*CELL_SIZE))  
+            dune = pygame.transform.scale(dune,  (4*CELL_SIZE, 3*CELL_SIZE))  
             screen.blit(dune, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
 
     
         # Map neige
@@ -268,32 +298,32 @@ class Case :
             sapin = pygame.transform.scale(sapin,  (3*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(sapin, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
         # Afficher les bonhomme de neige 
         elif self.propriete == 'bonhomme':
             bonhomme = pygame.image.load("images/bonhomme.png")
             bonhomme = pygame.transform.scale(bonhomme,  (2*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(bonhomme, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
 
         # Afficher les feu
         elif self.propriete == 'feu':
             feu = pygame.image.load("images/feu.png")
-            feu = pygame.transform.scale(feu,  (3*CELL_SIZE, 2*CELL_SIZE))  
+            feu = pygame.transform.scale(feu,  (1.5*CELL_SIZE, 1.5*CELL_SIZE))  
             screen.blit(feu, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
 
       
 
         # Afficher les glacier
         elif self.propriete == 'glace':
-            glace = pygame.image.load("images/glace.png")
-            glace  = pygame.transform.scale(glace ,  (2*CELL_SIZE, 2*CELL_SIZE))  
+            glace = pygame.image.load("images/glace.jpg")
+            glace  = pygame.transform.scale(glace ,  (1*CELL_SIZE, 1*CELL_SIZE))  
             screen.blit(glace , (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
         
         
         # Afficher les montagnes
@@ -302,4 +332,4 @@ class Case :
             montagne = pygame.transform.scale(montagne,  (5*CELL_SIZE, 2*CELL_SIZE))  
             screen.blit(montagne, (self.x * CELL_SIZE,
                                 self.y * CELL_SIZE))
-            pygame.display.flip()
+            #pygame.display.flip()
