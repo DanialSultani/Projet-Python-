@@ -248,10 +248,10 @@ class Unit(ABC):
 
 class Tank(Unit):
     name = "char"
-    max_distance = 5 # Distance maximale (2 cases)
-    max_health = 6
+    max_distance = 3 # Distance maximale (2 cases)
+    max_health = 12
     attack_power = 3  # Pouvoir d'attaque
-    attack_range = 2
+    attack_range = 3
     competence = [Canon(),Booster()]
     def __init__(self, x, y, team):
         super().__init__(x, y, team, self.name, self.max_health, self.attack_power, self.attack_range, self.max_distance,self.competence)
@@ -260,7 +260,7 @@ class Tank(Unit):
 class Helico(Unit): 
     name = "helico"
     # Initialisation des capacités 
-    max_distance = 10  # Distance maximale (4 cases)
+    max_distance = 50  # Distance maximale (4 cases)
     max_health = 3
     attack_power = 3  # Pouvoir d'attaque
     attack_range = 3
@@ -272,8 +272,8 @@ class Helico(Unit):
 class Medecin(Unit):
     name = "medecin"
     # Initialisation des capacités 
-    max_distance = 2  # Distance de déplacement
-    health = 2
+    max_distance = 4  # Distance de déplacement
+    health = 5
     max_health = 2
     heal_power = 2 
     attack_power = 3  # Pouvoir d'attaque
@@ -287,7 +287,7 @@ class Soldat(Unit):
     name = "soldat"
     # Initialisation des capacités 
     max_distance = 2 # Distance maximale 
-    health = 6
+    health = 8
     max_health = 6
     attack_power = 1  # Pouvoir d'attaque
     attack_range = 8

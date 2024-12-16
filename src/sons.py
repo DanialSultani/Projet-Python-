@@ -38,3 +38,4 @@ class SoundEffect:
                 self.sounds[name].set_volume(volume)
             else:
                 print(f"Erreur : le son '{name}' n'existe pas.")
+

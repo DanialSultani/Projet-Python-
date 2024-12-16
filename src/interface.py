@@ -184,12 +184,12 @@ class Game :
         self.player1_units = [Soldat(2, 2,  'player1'),
                              Medecin(3, 1, 'player1'),
                              Helico(0, 3, 'player1'),
-                             Tank(10, 10, 'player1')]
+                             Tank(1, 0, 'player1')]
 
         self.player2_units = [Soldat(20, 12, 'player2'),
                             Medecin(22, 11, 'player2'),
                             Helico(19, 14, 'player2'),
-                            Tank(11, 12, 'player2')]
+                            Tank(21, 12, 'player2')]
         
         self.start_time = pygame.time.get_ticks()  # Enregistre le temps de départ
         self.time_limit = 200000 # Par exemple, 5 minutes = 300000 ms (5 * 60 * 1000)
@@ -384,3 +384,5 @@ class Game :
             # Limiter le temps par frame
             elapsed_time = pygame.time.get_ticks() - start_time
             clock.tick(FPS)
+
+
